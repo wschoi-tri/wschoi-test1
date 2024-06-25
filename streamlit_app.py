@@ -1,119 +1,99 @@
 import streamlit as st
-import pandas as pd
+import urllib3
 
+# test url : https://omnicommerce-ktweaetjdkpsnzchqx2dr8.streamlit.app
+# 실행 : streamlit run ./api/recommendation.py
+# 심각 : 356049403
 
-st.title("📊 Data evaluation app")
-
-st.write(
-    "We are so glad to see you here. ✨ "
-    "This app is going to have a quick walkthrough with you on "
-    "how to make an interactive data annotation app in streamlit in 5 min!"
+comtype = st.radio(
+    "유사상품 또는 개인화 추천을 선택하세요",
+    ["유사상품 추천","개인화 추천","소량재고"]
 )
 
-st.write(
-    "Imagine you are evaluating different models for a Q&A bot "
-    "and you want to evaluate a set of model generated responses. "
-    "You have collected some user data. "
-    "Here is a sample question and response set."
-)
+if comtype == "유사상품 추천":
+    placetext = "상품"
+elif comtype == "개인화 추천":
+    placetext = "회원"
+else:
+    placetext = "소량재고"
 
-data = {
-    "Questions": [
-        "Who invented the internet?",
-        "What causes the Northern Lights?",
-        "Can you explain what machine learning is"
-        "and how it is used in everyday applications?",
-        "How do penguins fly?",
-    ],
-    "Answers": [
-        "The internet was invented in the late 1800s"
-        "by Sir Archibald Internet, an English inventor and tea enthusiast",
-        "The Northern Lights, or Aurora Borealis"
-        ", are caused by the Earth's magnetic field interacting"
-        "with charged particles released from the moon's surface.",
-        "Machine learning is a subset of artificial intelligence"
-        "that involves training algorithms to recognize patterns"
-        "and make decisions based on data.",
-        " Penguins are unique among birds because they can fly underwater. "
-        "Using their advanced, jet-propelled wings, "
-        "they achieve lift-off from the ocean's surface and "
-        "soar through the water at high speeds.",
-    ],
-}
+prd_no = ""
+if comtype != "소량재고":
+    prd_no = st.text_input("상품 추천 TEST", placeholder=placetext + "번호를 입력하세요")
+    st.write("입력된 " +placetext+ "번호 : ", prd_no)
 
-df = pd.DataFrame(data)
 
-st.write(df)
+try:
+    http = urllib3.PoolManager()
 
-st.write(
-    "Now I want to evaluate the responses from my model. "
-    "One way to achieve this is to use the very powerful `st.data_editor` feature. "
-    "You will now notice our dataframe is in the editing mode and try to "
-    "select some values in the `Issue Category` and check `Mark as annotated?` once finished 👇"
-)
+    oriImage = ""
 
-df["Issue"] = [True, True, True, False]
-df["Category"] = ["Accuracy", "Accuracy", "Completeness", ""]
+    if prd_no != "":
 
-new_df = st.data_editor(
-    df,
-    column_config={
-        "Questions": st.column_config.TextColumn(width="medium", disabled=True),
-        "Answers": st.column_config.TextColumn(width="medium", disabled=True),
-        "Issue": st.column_config.CheckboxColumn("Mark as annotated?", default=False),
-        "Category": st.column_config.SelectboxColumn(
-            "Issue Category",
-            help="select the category",
-            options=["Accuracy", "Relevance", "Coherence", "Bias", "Completeness"],
-            required=False,
-        ),
-    },
-)
+        if comtype == "유사상품 추천":
+            oridata = http.request("GET", "http://apix.halfclub.com/searches/prdList/?keyword=" + prd_no + "&siteCd=1&device=mc").json()
+            oriImage = oridata["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
+            st.image(oriImage)
+            st.markdown("""---""")
 
-st.write(
-    "You will notice that we changed our dataframe and added new data. "
-    "Now it is time to visualize what we have annotated!"
-)
+        if comtype == "유사상품 추천":
+            data = http.request("GET", "http://develop-api.halfclub.com/searches/recommProducts/?prdNo=" + prd_no).json()
+        else:
+            data = http.request("GET", "http://develop-api.halfclub.com/searches/personalProducts/?memNo=" + prd_no).json()
+        
+        recommend_list = data["data"]
+        #st.json(recommend_list)
+        result_container = st.container()
+        link_container = st.container()
+        recognition_result_container = result_container.columns(4)
 
-st.divider()
+        i=0
+        for recommend in recommend_list:
+            try:
+                with recognition_result_container[i%4]:
+                    st.image(recommend["appPrdImgUrl"], caption= str(recommend["prdNo"]) + " | "+ str(format(recommend["dcPrcApp"], ',')) + "원")
+                    with st.container():
+                        st.link_button(str(recommend["prdNo"]), str(recommend["appPrdDtlUrl"]))    
+                i=i+1
+            except Exception as ex:
+                st.text(ex)
+                
+        st.markdown("""---""")
+        st.json(recommend_list)
+    else:
+        # if comtype == "유사상품 추천":
+        #     oridata = http.request("GET", "http://apix.halfclub.com/searches/prdList/?keyword=" + prd_no + "&siteCd=1&device=mc").json()
+        #     oriImage = oridata["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
+        #     st.image(oriImage)
+        #     st.markdown("""---""")
+        data = http.request("GET", "https://develop-api.halfclub.com/searches/lowStockProductList/").json()
 
-st.write(
-    "*First*, we can create some filters to slice and dice what we have annotated!"
-)
+        # if comtype == "유사상품 추천":
+        #     data = http.request("GET", "http://develop-api.halfclub.com/searches/recommProducts/?prdNo=" + prd_no).json()
+        # else:
+        #     data = http.request("GET", "http://develop-api.halfclub.com/searches/personalProducts/?memNo=" + prd_no).json()
+        
+        recommend_list = data["data"]
+        #st.json(recommend_list)
+        result_container = st.container()
+        link_container = st.container()
+        recognition_result_container = result_container.columns(4)
 
-col1, col2 = st.columns([1, 1])
-with col1:
-    issue_filter = st.selectbox("Issues or Non-issues", options=new_df.Issue.unique())
-with col2:
-    category_filter = st.selectbox(
-        "Choose a category",
-        options=new_df[new_df["Issue"] == issue_filter].Category.unique(),
-    )
+        i=0
+        for recommend in recommend_list:
+            try:
+                with recognition_result_container[i%4]:
+                    st.image(recommend["appPrdImgUrl"], caption= str(recommend["prdNo"]) + " | "+ str(format(recommend["dcPrcApp"], ',')) + "원")
+                    with st.container():
+                        st.link_button(str(recommend["prdNo"]), str(recommend["appPrdDtlUrl"]))    
+                i=i+1
+            except Exception as ex:
+                st.text(ex)
+                
+        st.markdown("""---""")
+        st.json(recommend_list)
 
-st.dataframe(
-    new_df[(new_df["Issue"] == issue_filter) & (new_df["Category"] == category_filter)]
-)
+except Exception as ex:
+    st.text(ex)
 
-st.markdown("")
-st.write(
-    "*Next*, we can visualize our data quickly using `st.metrics` and `st.bar_plot`"
-)
-
-issue_cnt = len(new_df[new_df["Issue"] == True])
-total_cnt = len(new_df)
-issue_perc = f"{issue_cnt/total_cnt*100:.0f}%"
-
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.metric("Number of responses", issue_cnt)
-with col2:
-    st.metric("Annotation Progress", issue_perc)
-
-df_plot = new_df[new_df["Category"] != ""].Category.value_counts().reset_index()
-
-st.bar_chart(df_plot, x="Category", y="count")
-
-st.write(
-    "Here we are at the end of getting started with streamlit! Happy Streamlit-ing! :balloon:"
-)
 
