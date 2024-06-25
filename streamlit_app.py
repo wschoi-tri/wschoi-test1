@@ -7,7 +7,7 @@ import urllib3
 
 comtype = st.radio(
     "유사상품 또는 개인화 추천을 선택하세요",
-    ["유사상품 추천","개인화 추천","소량재고"]
+    ["소량재고""유사상품 추천","개인화 추천"]
 )
 
 if comtype == "유사상품 추천":
@@ -60,21 +60,9 @@ try:
                 
         st.markdown("""---""")
         st.json(recommend_list)
-    else:
-        # if comtype == "유사상품 추천":
-        #     oridata = http.request("GET", "http://apix.halfclub.com/searches/prdList/?keyword=" + prd_no + "&siteCd=1&device=mc").json()
-        #     oriImage = oridata["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
-        #     st.image(oriImage)
-        #     st.markdown("""---""")
+    elif comtype == "소량재고":
         data = http.request("GET", "https://develop-api.halfclub.com/searches/lowStockProductList/").json()
-
-        # if comtype == "유사상품 추천":
-        #     data = http.request("GET", "http://develop-api.halfclub.com/searches/recommProducts/?prdNo=" + prd_no).json()
-        # else:
-        #     data = http.request("GET", "http://develop-api.halfclub.com/searches/personalProducts/?memNo=" + prd_no).json()
-        
         recommend_list = data["data"]
-        #st.json(recommend_list)
         result_container = st.container()
         link_container = st.container()
         recognition_result_container = result_container.columns(4)
