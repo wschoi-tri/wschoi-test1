@@ -1,7 +1,9 @@
 import streamlit as st
 import urllib3
+import json
 
 # test url : https://omnicommerce-ktweaetjdkpsnzchqx2dr8.streamlit.app
+# https://wschoi-test1-s9z9dkk1uh.streamlit.app/
 # 실행 : streamlit run ./api/recommendation.py
 # 심각 : 356049403
 
@@ -39,8 +41,7 @@ try:
         if comtype == "유사상품 추천":
             url = "http://develop-api.halfclub.com/searches/recommProducts/?prdNo=" + prd_no
         else:
-            url = "http://develop-api.halfclub.com/searches/personalProducts/?memNo=" + prd_no
-        
+            url = "http://develop-api.halfclub.com/searches/personalProducts/?deviceID=" + prd_no
     elif comtype == "소량재고":
         url = "https://develop-api.halfclub.com/searches/lowStockProductList/"
 
@@ -64,9 +65,25 @@ try:
             except Exception as ex:
                 st.text(ex)                
         st.markdown("""---""")
-        st.json(recommend_list)
-    
+        # st.json(recommend_list)
+     
 
+        
+        url2 = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=30"
+        reqHeader = urllib3.HTTPHeaderDict()
+        reqHeader.add("x-api-key", "FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE")
+        reqHeader.add("Content-Type", "application/json")
+        resp = urllib3.request(
+            "GET",
+            url2,
+            headers=reqHeader,
+        )
+        st.text_input("Request API URL2", url2)
+        st.json(resp)
+
+        # respData = resp.data.decode("utf-8")
+        # dataom = json.load(respData)
+        # st.json(dataom.get("recommendation"))
 except Exception as ex:
     st.text(ex)
 
