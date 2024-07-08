@@ -49,13 +49,13 @@ try:
     elif comtype == "소량재고":
         url = "https://develop-api.halfclub.com/searches/lowStockProductList/"
 
-    omni_url = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=60"
+    omni_recomm_url = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=60"
         
     data = http.request("GET", url).json()
     st.markdown("""---""")
     st.text_input("Request Search API URL", url)
     if prd_no != "" and comtype == "유사상품 추천":
-        st.text_input("Request Omni API URL", omni_url)
+        st.text_input("Request Omni API URL", omni_recomm_url)
     st.markdown("""---""")
 
     if len(data["data"]) > 0:
@@ -67,7 +67,7 @@ try:
         if prd_no != "" and comtype == "유사상품 추천":
             omni_resp = urllib3.request(
                 "GET",
-                omni_url,
+                omni_recomm_url,
                 headers={"x-api-key":"FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE"},
             )
             omni_respData = omni_resp.data.decode("utf-8")
@@ -87,29 +87,53 @@ try:
                 i=i+1
             except Exception as ex:
                 st.text(ex)
+    
+    st.markdown("""---""")
+    if comtype == "개인화 추천":
+        omni_pers_url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest?deviceId={prd_no}&limit=30&strategy=recommended-for-you&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
+        st.text_input("개인화 추천 (recommended-for-you)", omni_pers_url)
+        omni_pers_resp = urllib3.request(
+            "GET",
+            omni_pers_url,
+            headers={"x-api-key":"gwQVGPN8hZUuUi7M7hAJYZWwy7wEPPd4Bk6GipDu"},
+        )
+        omni_pers_respData = omni_pers_resp.data.decode("utf-8")
+        omni_pers_data = json.loads(omni_pers_respData)
+        # st.json(omni_pers_data["recommendation"])
 
-        # if prd_no != "" and comtype == "유사상품 추천":
-        #     st.markdown("""---""")
-        #     ## 옴니커머스 데이터 확인
-        #     # omni_url = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=30"
-        #     st.text_input("옴니커머스 데이터 확인", omni_url)
+        i=0
+        result_container2 = st.container()
+        recognition_result_container2 = result_container2.columns(4)
+        for recommend in omni_pers_data["recommendation"]:
+            try:
+                with recognition_result_container2[i%4]:
+                    st.image(recommend["imageInfo"]["url"], caption= str(recommend["id"]) + " | "+ str(format(recommend["metadata"]["discountPrice"], ',')) + "원")
+                i=i+1
+            except Exception as ex:
+                st.text(ex)
+        
+        st.markdown("""---""")
+        omni_pers_url3 = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest?deviceId={prd_no}&limit=30&strategy=often-viewed-together&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
+        st.text_input("개인화 추천 (often-viewed-together)", omni_pers_url3)
+        omni_pers_resp3 = urllib3.request(
+            "GET",
+            omni_pers_url3,
+            headers={"x-api-key":"gwQVGPN8hZUuUi7M7hAJYZWwy7wEPPd4Bk6GipDu"},
+        )
+        omni_pers_respData3 = omni_pers_resp3.data.decode("utf-8")
+        omni_pers_data3 = json.loads(omni_pers_respData3)
+        # st.json(omni_pers_data3["recommendation"])
 
-        #     # reqHeader = urllib3.HTTPHeaderDict()
-        #     # reqHeader.add("x-api-key", "FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE")
-        #     # reqHeader.add("Content-Type", "application/json")
-        #     resp = urllib3.request(
-        #         "GET",
-        #         omni_url,
-        #         headers={"x-api-key":"FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE"},
-        #     )
-        #     respData = resp.data.decode("utf-8")
-        #     data = json.loads(respData)
-        #     st.json(data)
-
-        #     # respData = resp.data.decode("utf-8")
-        #     # dataom = json.load(respData)
-        #     # st.json(dataom.get("recommendation"))
+        i=0
+        result_container3 = st.container()
+        recognition_result_container3 = result_container3.columns(4)
+        for recommend in omni_pers_data3["recommendation"]:
+            try:
+                with recognition_result_container3[i%4]:
+                    st.image(recommend["imageInfo"]["url"], caption= str(recommend["id"]) + " | "+ str(format(recommend["metadata"]["discountPrice"], ',')) + "원")
+                i=i+1
+            except Exception as ex:
+                st.text(ex)
+        st.markdown("""---""")
 except Exception as ex:
     st.text(ex)
-
-
