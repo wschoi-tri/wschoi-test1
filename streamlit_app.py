@@ -21,7 +21,11 @@ else:
 
 prd_no = ""
 if comtype != "소량재고":
-    prd_no = st.text_input("상품 추천", placeholder=placetext + "번호를 입력하세요").strip()
+    if comtype == "유사상품 추천":
+        prd_no = st.text_input("상품 추천 (상품번호)", "354783472", placeholder=placetext + "번호를 입력하세요").strip()
+    elif comtype == "개인화 추천":
+        prd_no = st.text_input("회원 추천 (회원번호)", "11876024", placeholder=placetext + "번호를 입력하세요").strip()
+    # prd_no = st.text_input("상품 추천", "354783472", placeholder=placetext + "번호를 입력하세요").strip()
     st.write("입력된 " +placetext+ "번호 : ", prd_no)
 
 try:
@@ -52,7 +56,7 @@ try:
     st.text_input("Request Search API URL", url)
     if prd_no != "" and comtype == "유사상품 추천":
         st.text_input("Request Omni API URL", omni_url)
-    # st.markdown("""---""")
+    st.markdown("""---""")
 
     if len(data["data"]) > 0:
         recommend_list = data["data"]
@@ -69,7 +73,6 @@ try:
             omni_respData = omni_resp.data.decode("utf-8")
             omni_data = json.loads(omni_respData)
             # st.json(omni_data["recommendation"])
-            
         i=0
         for recommend in recommend_list:
             try:
