@@ -21,7 +21,7 @@ else:
 
 prd_no = ""
 if comtype != "소량재고":
-    prd_no = st.text_input("상품 추천 TEST", placeholder=placetext + "번호를 입력하세요").strip()
+    prd_no = st.text_input("상품 추천", placeholder=placetext + "번호를 입력하세요").strip()
     st.write("입력된 " +placetext+ "번호 : ", prd_no)
 
 try:
@@ -45,45 +45,67 @@ try:
     elif comtype == "소량재고":
         url = "https://develop-api.halfclub.com/searches/lowStockProductList/"
 
+    omni_url = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=60"
+        
     data = http.request("GET", url).json()
     st.markdown("""---""")
-    st.text_input("Request API URL", url)
-    st.markdown("""---""")
+    st.text_input("Request Search API URL", url)
+    if prd_no != "" and comtype == "유사상품 추천":
+        st.text_input("Request Omni API URL", omni_url)
+    # st.markdown("""---""")
 
     if len(data["data"]) > 0:
         recommend_list = data["data"]
         result_container = st.container()
         link_container = st.container()
         recognition_result_container = result_container.columns(4)
+
+        if prd_no != "" and comtype == "유사상품 추천":
+            omni_resp = urllib3.request(
+                "GET",
+                omni_url,
+                headers={"x-api-key":"FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE"},
+            )
+            omni_respData = omni_resp.data.decode("utf-8")
+            omni_data = json.loads(omni_respData)
+            # st.json(omni_data["recommendation"])
+            
         i=0
         for recommend in recommend_list:
             try:
                 with recognition_result_container[i%4]:
                     st.write("상품 이동 : [" + str(recommend["prdNo"]) + "](" + str(recommend["appPrdDtlUrl"]) + ")")
-                    st.image(recommend["appPrdImgUrl"], caption= str(recommend["prdNo"]) + " | "+ str(format(recommend["dcPrcApp"], ',')) + "원")
+                    sScore = ""
+                    if prd_no != "" and comtype == "유사상품 추천":
+                        for omni_data1 in omni_data["recommendation"]:
+                            if omni_data1["id"] == str(recommend["prdNo"]) :
+                                sScore = " | 유사점수 : " + str(omni_data1["similarityScore"])
+                    st.image(recommend["appPrdImgUrl"], caption= str(recommend["prdNo"]) + " | "+ str(format(recommend["dcPrcApp"], ',')) + "원" + sScore)
                 i=i+1
             except Exception as ex:
-                st.text(ex)                
-        st.markdown("""---""")
-        # st.json(recommend_list)
-     
+                st.text(ex)
 
-        
-        url2 = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=30"
-        reqHeader = urllib3.HTTPHeaderDict()
-        reqHeader.add("x-api-key", "FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE")
-        reqHeader.add("Content-Type", "application/json")
-        resp = urllib3.request(
-            "GET",
-            url2,
-            headers=reqHeader,
-        )
-        st.text_input("Request API URL2", url2)
-        st.json(resp)
+        # if prd_no != "" and comtype == "유사상품 추천":
+        #     st.markdown("""---""")
+        #     ## 옴니커머스 데이터 확인
+        #     # omni_url = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=30"
+        #     st.text_input("옴니커머스 데이터 확인", omni_url)
 
-        # respData = resp.data.decode("utf-8")
-        # dataom = json.load(respData)
-        # st.json(dataom.get("recommendation"))
+        #     # reqHeader = urllib3.HTTPHeaderDict()
+        #     # reqHeader.add("x-api-key", "FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE")
+        #     # reqHeader.add("Content-Type", "application/json")
+        #     resp = urllib3.request(
+        #         "GET",
+        #         omni_url,
+        #         headers={"x-api-key":"FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE"},
+        #     )
+        #     respData = resp.data.decode("utf-8")
+        #     data = json.loads(respData)
+        #     st.json(data)
+
+        #     # respData = resp.data.decode("utf-8")
+        #     # dataom = json.load(respData)
+        #     # st.json(dataom.get("recommendation"))
 except Exception as ex:
     st.text(ex)
 
