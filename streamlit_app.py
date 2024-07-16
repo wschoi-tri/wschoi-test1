@@ -19,6 +19,8 @@ elif comtype == "개인화 추천":
 else:
     placetext = "소량재고"
 
+showJson = st.checkbox("Json 표시", False)
+
 prd_no = ""
 mem_no = ""
 dispCtgrNo = ""
@@ -83,8 +85,9 @@ try:
 
     data = http.request("GET", url)
     dataJson = data.json()
-    if data.status >= 300:
-        st.json(dataJson)
+    
+    if data.status >= 300 or showJson:
+        st.json(json.loads(data.data.decode("utf-8")), expanded=False)
 
     if data.status < 300 and len(dataJson["data"]) > 0:
         recommend_list = dataJson["data"]
@@ -98,10 +101,10 @@ try:
                 omni_recomm_url,
                 headers={"x-api-key":"FjrRJypJ7dQu2vVKJ9Z4WrcJDX4F6SFdQ8BHwjJE"},
             )
-            st.text(1)
             omni_respData = omni_resp.data.decode("utf-8")
             omni_data = json.loads(omni_respData)
-            st.json(omni_data)
+            if omni_resp.status >= 300 or showJson:
+                st.json(omni_data, expanded=False)
         i=0
         for recommend in recommend_list:
             try:
@@ -130,8 +133,9 @@ try:
             respData = resp.data.decode("utf-8")
             respJson = json.loads(respData)
 
+            if resp.status >= 300 or showJson:
+                st.json(respJson, expanded=False)
             if resp.status >= 300:
-                st.json(respJson)
                 continue
 
             i=0
