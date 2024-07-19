@@ -166,7 +166,7 @@ try:
                 except Exception as ex:
                     st.text(ex)
 
-    if showOmni == True and (comtype == "개인화 추천" or comtype == "개인화 개편"):
+    if showAsis == True and (comtype == "개인화 추천" or comtype == "개인화 개편"):
         st.markdown("""---""")
         targetList = []
         targetList.append(
