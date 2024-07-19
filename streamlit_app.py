@@ -19,6 +19,7 @@ elif comtype == "개인화 추천":
 else:
     placetext = "소량재고" 
 
+st.markdown("""---""")
 showJson = st.checkbox("Json 표시", False)
 if comtype == "개인화 추천" or comtype == "개인화 개편":
     showOmni = st.checkbox("옴니 표시", True)
