@@ -17,9 +17,12 @@ if comtype == "유사상품 추천":
 elif comtype == "개인화 추천":
     placetext = "회원"
 else:
-    placetext = "소량재고"
+    placetext = "소량재고" 
 
 showJson = st.checkbox("Json 표시", False)
+if comtype == "개인화 추천" or comtype == "개인화 개편":
+    showOmni = st.checkbox("옴니 표시", True)
+    showAsis = st.checkbox("자체 표시", True)
 
 prd_no = ""
 mem_no = ""
@@ -58,13 +61,20 @@ try:
     http = urllib3.PoolManager()
 
     oriImage = ""
+    ori_brandCd = ""
+    ori_dispCtgrNo = ""
     url = ""
     data = {}
 
     if prd_no != "":
         st.markdown("""---""")
-        oridata = http.request("GET", "http://apix.halfclub.com/searches/prdList/?keyword=" + prd_no + "&siteCd=1&device=mc").json()
-        oriImage = oridata["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
+        oridata = http.request("GET", "http://apix.halfclub.com/searches/prdList/?keyword=" + prd_no + "&siteCd=1&device=mc")
+        oridataJson = oridata.json()
+        if oridata.status >= 300 or showJson:
+            st.json(json.loads(oridata.data.decode("utf-8")), expanded=False)
+        oriImage = oridataJson["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
+        ori_brandCd = oridataJson["data"]["result"]["hits"]["hits"][0]["_source"]["brandCd"]
+        ori_dispCtgrNo = oridataJson["data"]["result"]["hits"]["hits"][0]["_source"]["dpCtgrNo1"][0]
         st.image(oriImage)
     
     if comtype == "유사상품 추천":
@@ -125,8 +135,8 @@ try:
             except Exception as ex:
                 st.text(ex)
     
-    st.markdown("""---""")
-    if comtype == "개인화 추천" or comtype == "개인화 개편":
+    if showOmni == True and (comtype == "개인화 추천" or comtype == "개인화 개편"):
+        st.markdown("""---""")
         for strategy in strategys:
             url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest/{prd_no}?deviceId={device_id}&limit=30&strategy={strategy}&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
             st.text_area(f"{strategy}_옴니커머스", url)
@@ -155,14 +165,73 @@ try:
                 except Exception as ex:
                     st.text(ex)
 
-    if comtype == "개인화 개편":
-        for strategy in strategys:
-            url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest/{prd_no}?deviceId={device_id}&limit=30&strategy={strategy}&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
-            st.text_area(f"{strategy}_옴니커머스", url)
+    if showOmni == True and (comtype == "개인화 추천" or comtype == "개인화 개편"):
+        st.markdown("""---""")
+        targetList = []
+        targetList.append(
+            {
+                "name":"개인화 추천 (회원기준)",
+                "url":f"https://hapix.halfclub.com/display/recommend/V2/todayRecommend?memNo={mem_no}&siteCd=1&deviceCd=001&sourceCd=01&sourceDetailCd=01",
+                "type":"todayRecommend",
+            }
+        )
+        targetList.append(
+            {
+                "name":"같은 브랜드 베스트 상품 (상품기준)",
+                "url":f"https://hapix.halfclub.com/searches/similarBestProducts/{prd_no}?interval=72&limit=15&is_brand=true&countryCd=001&langCd=001&siteCd=1&deviceCd=001&device=pc",
+                "type":"similarBestProducts",
+            }
+        )
+        targetList.append(
+            {
+                "name":"같은 카테고리 베스트 상품 (상품기준)",
+                "url":f"https://hapix.halfclub.com/searches/similarBestProducts/{prd_no}?interval=72&limit=15&is_category=true&countryCd=001&langCd=001&siteCd=1&deviceCd=001&device=pc",
+                "type":"similarBestProducts",
+            }
+        )
+        targetList.append(
+            {
+                "name":"다른 고객이 같이 구매한 상품 (상품기준)",
+                "url":f"https://hapix.halfclub.com/product/tTogether/tBuyTogether?productNo={prd_no}&countryCd=001&langCd=001&siteCd=1&deviceCd=003",
+                "type":"tBuyTogether",
+            }
+        )
+        targetList.append(
+            {
+                "name":"다른 고객이 함께 본 상품 (상품기준)",
+                "url":f"https://apix.halfclub.com/display/recommend/V1/tViewTogether?deviceCd=001&mandM=h_half_mo_seo&prdNo={prd_no}&siteCd=1",
+                "type":"tViewTogether",
+            }
+        )
+        # targetList.append(
+        #     {
+        #         "name":"이런 상품은 어때요? (상품기준)",
+        #         "url":f"https://apix.halfclub.com/product/products/getRelatedProducts/{prd_no}?deviceCd=001",
+        #         "type":"getRelatedProducts",
+        #     }
+        # )
+        # targetList.append(
+        #     {
+        #         "name":"같은 카테고리 베스트 상품 (카테고리 기준)",
+        #         "url":f"https://apix.halfclub.com/product/best/byCategory?countryCd=001&deviceCd=001&dispCtgrNo={ori_dispCtgrNo}&langCd=001&pageNo=0&pageSize=6&siteCd=1",
+        #         "type":"byCategory",
+        #     }
+        # )
+        # targetList.append(
+        #     {
+        #         "name":"같은 브랜드 베스트 상품 (브랜드 기준)",
+        #         "url":f"https://apix.halfclub.com/product/best/byBrand?brandCd={ori_brandCd}&countryCd=001&deviceCd=001&langCd=001&pageNo=0&pageSize=6&siteCd=1",
+        #         "type":"byBrand",
+        #     }
+        # )
+
+        for target in targetList:
+            url = target["url"]
+            name = target["name"]
+            st.text_area(f"{name}_자체", url)
             resp = http.request(
                 "GET",
                 url,
-                headers={"x-api-key":"gwQVGPN8hZUuUi7M7hAJYZWwy7wEPPd4Bk6GipDu"},
             )            
             respData = resp.data.decode("utf-8")
             respJson = json.loads(respData)
@@ -175,11 +244,33 @@ try:
             i=0
             container = st.container(border=True)
             col_container = container.columns(4)
-            for row in respJson["recommendation"]:
+
+            prdList = []
+            if target["type"] == "todayRecommend":
+                prdList = respJson["data"]["todayRcommendPrdList"]
+            elif target["type"] == "tBuyTogether":
+                prdList = respJson["data"]
+            elif target["type"] == "tViewTogether":
+                prdList = respJson["data"]["tViewTogether"]
+            else:
+                prdList = respJson
+
+            for row in prdList:
                 try:
-                    if http.request("GET", row["imageInfo"]["url"]).status == 200:
+                    row_prd_no = row["prdNo"]
+                    row_image_url = ""
+                    if target["type"] == "todayRecommend":
+                        row_image_url = row["basicExtUrl"]
+                    elif target["type"] == "tBuyTogether":
+                         row_image_url = "https://cdn2.halfclub.com/rimg/230x306/cover/" + row["productImage"]["basicExtNm"]
+                    elif target["type"] == "tViewTogether":
+                         row_image_url = "https://cdn2.halfclub.com/rimg/230x306/cover/" + row["basicExtNm"]
+                    else:
+                        row_image_url = row["appPrdImgUrl"]
+
+                    if http.request("GET", row_image_url).status == 200:
                         with col_container[i%4]:
-                            st.image(row["imageInfo"]["url"], caption= str(row["id"]) + " | "+ str(format(row["metadata"]["discountPrice"], ',')) + "원")
+                            st.image(row_image_url, caption= str(row_prd_no))
                         i=i+1
                 except Exception as ex:
                     st.text(ex)
