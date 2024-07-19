@@ -200,7 +200,7 @@ try:
         targetList.append(
             {
                 "name":"다른 고객이 함께 본 상품 (상품기준)",
-                "url":f"https://apix.halfclub.com/display/recommend/V1/tViewTogether?deviceCd=001&mandM=h_half_mo_seo&prdNo={prd_no}&siteCd=1",
+                "url":f"https://hapix.halfclub.com/display/recommend/V1/tViewTogether?deviceCd=001&mandM=h_half_mo_seo&prdNo={prd_no}&siteCd=1",
                 "type":"tViewTogether",
             }
         )
