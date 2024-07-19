@@ -9,7 +9,7 @@ import json
 
 comtype = st.radio(
     "조회 구분",
-    ["소량재고","유사상품 추천","개인화 추천"]
+    ["소량재고","유사상품 추천","개인화 추천","개인화 개편"]
 )
 
 if comtype == "유사상품 추천":
@@ -34,11 +34,13 @@ if comtype != "소량재고":
         st.write("입력된 " +placetext+ "번호 : ", prd_no)
         dispCtgrNo = st.text_input("전시번호", "110", placeholder=placetext + "번호를 입력하세요").strip()
         st.write("입력된 전시번호 : ", dispCtgrNo)
-    elif comtype == "개인화 추천":
+    elif comtype == "개인화 추천" or comtype == "개인화 개편":
         prd_no = st.text_input("상품번호", "354783472", placeholder=placetext + "번호를 입력하세요").strip()
         st.write("입력된 상품번호 : ", prd_no)
-        mem_no = st.text_input("회원번호", "7614d21f100cbb15f6cad643077160c5b339b9a3c3a9eb3952782c74d8bd650f", placeholder=placetext + "번호를 입력하세요").strip()
+        mem_no = st.text_input("회원번호", "11876024", placeholder=placetext + "번호를 입력하세요").strip()
         st.write("입력된 회원번호 : ", mem_no)
+        device_id = st.text_input("회원번호 암호화", "7614d21f100cbb15f6cad643077160c5b339b9a3c3a9eb3952782c74d8bd650f", placeholder=placetext + "번호를 입력하세요").strip()
+        st.write("입력된 회원번호 암호화 : ", device_id)
         st.markdown("""---""")
         if prd_no != "" :
             strategy = st.radio(
@@ -72,7 +74,10 @@ try:
             url = f"http://develop-api.halfclub.com/searches/recommProducts/?prdNo=0&dispCtgrNo={dispCtgrNo}"
         
     if comtype == "개인화 추천":
-        url = f"http://develop-api.halfclub.com/searches/recommend/?deviceID={mem_no}&prdNo={prd_no}&strategy={strategy}"
+        url = f"http://develop-api.halfclub.com/searches/recommend/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
+
+    if comtype == "개인화 개편":
+        url = f"http://develop-api.halfclub.com/searches/personalProducts/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
 
     if comtype == "소량재고":
         url = "https://develop-api.halfclub.com/searches/lowStockProductList/"
@@ -80,7 +85,7 @@ try:
     omni_recomm_url = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=60"
 
     st.markdown("""---""")
-    st.text_input("Request Search API URL", url)
+    st.text_area("Request Search API URL", url)
     st.markdown("""---""")
 
     data = http.request("GET", url)
@@ -121,10 +126,10 @@ try:
                 st.text(ex)
     
     st.markdown("""---""")
-    if comtype == "개인화 추천":
+    if comtype == "개인화 추천" or comtype == "개인화 개편":
         for strategy in strategys:
-            url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest/{prd_no}?deviceId={mem_no}&limit=30&strategy={strategy}&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
-            st.text_input(f"개인화 추천 ({strategy})", url)
+            url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest/{prd_no}?deviceId={device_id}&limit=30&strategy={strategy}&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
+            st.text_area(f"{strategy}_옴니커머스", url)
             resp = http.request(
                 "GET",
                 url,
@@ -150,6 +155,34 @@ try:
                 except Exception as ex:
                     st.text(ex)
 
+    if comtype == "개인화 개편":
+        for strategy in strategys:
+            url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest/{prd_no}?deviceId={device_id}&limit=30&strategy={strategy}&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
+            st.text_area(f"{strategy}_옴니커머스", url)
+            resp = http.request(
+                "GET",
+                url,
+                headers={"x-api-key":"gwQVGPN8hZUuUi7M7hAJYZWwy7wEPPd4Bk6GipDu"},
+            )            
+            respData = resp.data.decode("utf-8")
+            respJson = json.loads(respData)
+
+            if resp.status >= 300 or showJson:
+                st.json(respJson, expanded=False)
+            if resp.status >= 300:
+                continue
+
+            i=0
+            container = st.container(border=True)
+            col_container = container.columns(4)
+            for row in respJson["recommendation"]:
+                try:
+                    if http.request("GET", row["imageInfo"]["url"]).status == 200:
+                        with col_container[i%4]:
+                            st.image(row["imageInfo"]["url"], caption= str(row["id"]) + " | "+ str(format(row["metadata"]["discountPrice"], ',')) + "원")
+                        i=i+1
+                except Exception as ex:
+                    st.text(ex)
 
 except Exception as ex:
     st.json(ex)
