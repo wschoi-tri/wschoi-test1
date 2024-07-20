@@ -14,6 +14,10 @@ comtype = st.radio(
     ["개인화 개편 전체","개인화 개편","소량재고","유사상품 추천","개인화 추천"]
 )
 
+urlHost = st.radio(
+    "서비스 구분",
+    ["hapi","develop-api"]
+)
 if comtype == "유사상품 추천":
     placetext = "상품"
 elif comtype == "개인화 추천":
@@ -81,7 +85,7 @@ try:
     if prd_no != "":
         st.markdown("""---""")
         try:
-            oridata = http.request("GET", "http://apix.halfclub.com/searches/prdList/?keyword=" + prd_no + "&siteCd=1&device=mc")
+            oridata = http.request("GET", f"http://{urlHost}.halfclub.com/searches/prdList/?keyword={prd_no}&siteCd=1&device=mc")
             oridataJson = oridata.json()
             if oridata.status >= 300 or showJson:
                 st.json(json.loads(oridata.data.decode("utf-8")), expanded=False)
@@ -94,18 +98,18 @@ try:
     
     if comtype == "유사상품 추천":
         if prd_no != "":
-            url = f"http://hapi.halfclub.com/searches/recommProducts/?prdNo={prd_no}&dispCtgrNo={dispCtgrNo}"
+            url = f"http://{urlHost}.halfclub.com/searches/recommProducts/?prdNo={prd_no}&dispCtgrNo={dispCtgrNo}"
         else:
-            url = f"http://hapi.halfclub.com/searches/recommProducts/?prdNo=0&dispCtgrNo={dispCtgrNo}"
+            url = f"http://{urlHost}.halfclub.com/searches/recommProducts/?prdNo=0&dispCtgrNo={dispCtgrNo}"
         
     if comtype == "개인화 추천":
-        url = f"http://hapi.halfclub.com/searches/recommend/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
+        url = f"http://{urlHost}.halfclub.com/searches/recommend/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
 
     if comtype == "개인화 개편":
-        url = f"http://hapi.halfclub.com/searches/personalProducts/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
+        url = f"http://{urlHost}.halfclub.com/searches/personalProducts/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
 
     if comtype == "소량재고":
-        url = "https://hapi.halfclub.com/searches/lowStockProductList/"
+        url = "https://{urlHost}.halfclub.com/searches/lowStockProductList/"
 
     omni_recomm_url = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=60"
 
@@ -120,7 +124,7 @@ try:
             strategyList = strategys
         for strategyItem in strategyList:
             strategy = strategyItem
-            url = f"http://develop-api.halfclub.com/searches/personalProducts/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
+            url = f"http://{urlHost}.halfclub.com/searches/personalProducts/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
             urls.append(url)
             
     for url in urls:
@@ -227,36 +231,36 @@ try:
         targetList.append(
             {
                 "name":"개인화 추천 (회원기준)",
-                "url":f"https://hapix.halfclub.com/display/recommend/V2/todayRecommend?memNo={mem_no}&siteCd=1&deviceCd=001&sourceCd=01&sourceDetailCd=01",
+                "url":f"https://{urlHost}.halfclub.com/display/recommend/V2/todayRecommend?memNo={mem_no}&siteCd=1&deviceCd=001&sourceCd=01&sourceDetailCd=01",
                 "type":"todayRecommend",
             }
         )
         targetList.append(
             {
                 "name":"같은 브랜드 베스트 상품 (상품기준)",
-                "url":f"https://hapix.halfclub.com/searches/similarBestProducts/{prd_no}?interval=72&limit=15&is_brand=true&countryCd=001&langCd=001&siteCd=1&deviceCd=001&device=pc",
+                "url":f"https://{urlHost}.halfclub.com/searches/similarBestProducts/{prd_no}?interval=72&limit=15&is_brand=true&countryCd=001&langCd=001&siteCd=1&deviceCd=001&device=pc",
                 "type":"similarBestProducts",
             }
         )
         targetList.append(
             {
                 "name":"같은 카테고리 베스트 상품 (상품기준)",
-                "url":f"https://hapix.halfclub.com/searches/similarBestProducts/{prd_no}?interval=72&limit=15&is_category=true&countryCd=001&langCd=001&siteCd=1&deviceCd=001&device=pc",
+                "url":f"https://{urlHost}.halfclub.com/searches/similarBestProducts/{prd_no}?interval=72&limit=15&is_category=true&countryCd=001&langCd=001&siteCd=1&deviceCd=001&device=pc",
                 "type":"similarBestProducts",
             }
         )
         targetList.append(
             {
-                "name":"다른 고객이 같이 구매한 상품 (상품기준)",
-                "url":f"https://hapix.halfclub.com/product/tTogether/tBuyTogether?productNo={prd_no}&countryCd=001&langCd=001&siteCd=1&deviceCd=003",
-                "type":"tBuyTogether",
+                "name":"다른 고객이 함께 본 상품 (상품기준)",
+                "url":f"https://{urlHost}.halfclub.com/display/recommend/V1/tViewTogether?deviceCd=001&mandM=h_half_mo_seo&prdNo={prd_no}&siteCd=1",
+                "type":"tViewTogether",
             }
         )
         targetList.append(
             {
-                "name":"다른 고객이 함께 본 상품 (상품기준)",
-                "url":f"https://hapix.halfclub.com/display/recommend/V1/tViewTogether?deviceCd=001&mandM=h_half_mo_seo&prdNo={prd_no}&siteCd=1",
-                "type":"tViewTogether",
+                "name":"다른 고객이 같이 구매한 상품 (상품기준)",
+                "url":f"https://{urlHost}.halfclub.com/product/tTogether/tBuyTogether?productNo={prd_no}&countryCd=001&langCd=001&siteCd=1&deviceCd=003",
+                "type":"tBuyTogether",
             }
         )
 
