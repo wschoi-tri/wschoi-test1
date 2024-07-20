@@ -35,7 +35,7 @@ prd_no = ""
 mem_no = ""
 dispCtgrNo = ""
 strategy = ""
-strategys = [ "recommend","similar-items","often-viewed-together","recommended-for-you", "popular-items", "frequently-bought-together"]
+strategys = ["recommended-for-you", "recommend", "popular-items", "similar-items", "often-viewed-together", "frequently-bought-together"]
 strategysName = {
         "similar-items":"카테고리 베스트",
         "often-viewed-together":"같이 본 상품",
