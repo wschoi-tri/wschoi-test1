@@ -143,7 +143,7 @@ try:
                     break
             if reqStrategy != "":
                 getTypeText = f"strategy : {reqStrategy}, getType : {getType}"
-                if getType == "self":
+                if getType == "self" or getType == "omni_recommend":
                     reqStrategyNm = strategysName[reqStrategy]                
                     getTypeText = f"strategy : {reqStrategy}, getType : {getType} -> 대체 : {reqStrategyNm}"
 
