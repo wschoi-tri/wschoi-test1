@@ -31,13 +31,14 @@ prd_no = ""
 mem_no = ""
 dispCtgrNo = ""
 strategy = ""
-strategys = ["similar-items","often-viewed-together","recommended-for-you", "popular-items", "frequently-bought-together"]
+strategys = [ "recommend","similar-items","often-viewed-together","recommended-for-you", "popular-items", "frequently-bought-together"]
 strategysName = {
         "similar-items":"카테고리 베스트",
         "often-viewed-together":"같이 본 상품",
         "recommended-for-you":"개인화 추천",
         "popular-items":"카테고리 베스트",
         "frequently-bought-together":"같이 구매 상품",
+        "recommend":"대체 없음",
 }
 strategys_noproduct = ["recommended-for-you", "popular-items"]
 if comtype != "소량재고":
