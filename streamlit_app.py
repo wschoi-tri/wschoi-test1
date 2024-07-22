@@ -13,11 +13,13 @@ comtype = st.radio(
     "조회 구분",
     ["개인화 개편 전체","개인화 개편","소량재고","유사상품 추천","개인화 추천"]
 )
+st.markdown("""---""")
 
 urlHost = st.radio(
     "서비스 구분",
     ["hapi","develop-api"]
 )
+
 if comtype == "유사상품 추천":
     placetext = "상품"
 elif comtype == "개인화 추천":
@@ -109,7 +111,7 @@ try:
         url = f"http://{urlHost}.halfclub.com/searches/personalProducts/?deviceID={device_id}&memNo={mem_no}&prdNo={prd_no}&strategy={strategy}"
 
     if comtype == "소량재고":
-        url = "https://{urlHost}.halfclub.com/searches/lowStockProductList/"
+        url = f"https://{urlHost}.halfclub.com/searches/lowStockProductList/"
 
     omni_recomm_url = f"https://api.kr.omnicommerce.ai/2023-02/similar-items/recommend/{prd_no}?limit=60"
 
@@ -214,7 +216,7 @@ try:
             col_container = container.columns(4)
             for row in respJson["recommendation"]:
                 try:
-                    if http.request("GET", row["imageInfo"]["url"]).status == 200:
+                    if http.request("GET", row["imageInfo"]["url"]).status < 300:
                         with col_container[i%4]:
                             st.image(row["imageInfo"]["url"], caption= str(row["id"]) + " | "+ str(format(row["metadata"]["discountPrice"], ',')) + "원")
                         i=i+1
@@ -307,7 +309,7 @@ try:
                     else:
                         row_image_url = row["appPrdImgUrl"]
 
-                    if http.request("GET", row_image_url).status == 200:
+                    if http.request("GET", row_image_url).status < 300:
                         with col_container[i%4]:
                             st.image(row_image_url, caption= str(row_prd_no))
                         i=i+1
