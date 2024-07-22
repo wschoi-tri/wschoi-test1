@@ -92,9 +92,11 @@ try:
             if oridata.status >= 300 or showJson:
                 st.json(json.loads(oridata.data.decode("utf-8")), expanded=False)
             oriImage = oridataJson["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
+            ori_prdNo = oridataJson["data"]["result"]["hits"]["hits"][0]["_id"]
+            ori_dcPrcApp = oridataJson["data"]["result"]["hits"]["hits"][0]["_source"]["dcPrcApp"]
             ori_brandCd = oridataJson["data"]["result"]["hits"]["hits"][0]["_source"]["brandCd"]
             ori_dispCtgrNo = oridataJson["data"]["result"]["hits"]["hits"][0]["_source"]["dpCtgrNo1"][0]
-            st.image(oriImage)
+            st.image(oriImage, ori_prdNo + " | " + str(format(ori_dcPrcApp, ',')) + "원")
         except:
             pass    
     
