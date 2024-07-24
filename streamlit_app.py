@@ -9,10 +9,18 @@ import urllib3.util
 # 실행 : streamlit run ./api/recommendation.py
 # 심각 : 356049403
 
+if st.query_params != {}:
+    keys = st.query_params.to_dict().keys()
+    st.text(keys)
+    # for param in st.query_params.keys:
+    #     if param == "comtype":
+    #         comtype = st.query_params[param]
+
 comtype = st.radio(
     "조회 구분",
     ["개인화 개편 전체","개인화 개편","소량재고","유사상품 추천","개인화 추천"]
 )
+
 st.markdown("""---""")
 
 urlHost = st.radio(
@@ -198,7 +206,10 @@ try:
     if showOmni == True and (comtype == "개인화 추천" or comtype == "개인화 개편"):
         st.markdown("""---""")
         for strategy in strategys:
-            url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest/{prd_no}?deviceId={device_id}&limit=30&strategy={strategy}&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
+            if prd_no == "":
+                url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest?deviceId={device_id}&limit=30&strategy={strategy}&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
+            else:
+                url = f"https://api.kr.omnicommerce.ai/2023-06/personalization/interest/{prd_no}?deviceId={device_id}&limit=30&strategy={strategy}&showInfo=IMAGE_INFO&showInfo=METADATA&showInfo=CONTEXT_INFO"
             st.text_area(f"{strategy}_옴니커머스", url)
             resp = http.request(
                 "GET",
