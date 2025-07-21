@@ -13,8 +13,8 @@ recomm_typ = st.selectbox("추천선택",
     options=[
         "buyuser",
         "buytogether",
-        "buytogetherage",
-        "buytogethergender",
+        # "buytogetherage",
+        # "buytogethergender",
         "viewtogether",
         "similaritem",
         "similar-image",
@@ -42,9 +42,10 @@ with st.form(key="view_form"):
     
     age = ""
     gender = ""
-    if recomm_typ in ["buytogetherage"]:
-        age = st.selectbox("연령대", options=["10대", "20대", "30대", "40대", "50대", "60대"], index=0)
-    if recomm_typ in ["buytogethergender"]:
+    if recomm_typ in ["buytogetherage", "buyuser"]:
+        # age = st.selectbox("연령대", options=["10대", "20대", "30대", "40대", "50대", "60대"], index=0)
+        age = st.selectbox("연령대", options=["01:30대 이하", "02:30대 초과"], index=0)
+    if recomm_typ in ["buytogethergender", "buyuser"]:
         gender = st.selectbox("성별", options=["남성01", "여성02"], index=0)
     k = st.slider(
         "추천 개수 (k)", min_value=1, max_value=500, value=50
@@ -94,6 +95,13 @@ if submit_button:
                 prd_no=int(prd_no+gender[-2:]),
                 size=int(k)
             )
+        elif recomm_typ in ["buyuser"]:
+            params = dict(
+                prd_no=int(prd_no),
+                age=age[:2],
+                gender=gender[-2:],
+                size=int(k)
+            )
         elif recomm_typ not in ["keyword-search"]:
             params = dict(
                 prd_no=int(prd_no),
@@ -125,7 +133,7 @@ if submit_button:
                 show_image_grid(ori_list, columns_per_row=1, title="원상품 이미지")
             except Exception as e:
                 st.error(f"원상품 이미지 로드 오류: {e}")
-        elif recomm_typ in ["buytogether", "viewtogether", "similaritem", "recommendforyou", "buytogetherage", "buytogethergender"]:
+        elif recomm_typ in ["buytogether", "viewtogether", "similaritem", "recommendforyou", "buytogetherage", "buytogethergender", "buyuser"]:
             resp_prd_no = data.get("prd_no", prd_no)
             if resp_prd_no == 0:
                 st.error("결과 없음")
@@ -141,7 +149,7 @@ if submit_button:
                         url = j["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
                         prdNm = j["data"]["result"]["hits"]["hits"][0]["_source"]["prdNm"]
                         if recomm_typ in ["buytogetherage"]:
-                            prdNm = f"연령대: {age[:2]}<br/>" + prdNm
+                            prdNm = f"연령대: {age}<br/>" + prdNm
                         elif recomm_typ in ["buytogethergender"]:
                             prdNm = f"성별: {'남성' if gender[-2:] == '01' else ('여성' if gender[-2:] == '02' else '선택없음')}<br/>" + prdNm
                         elif recomm_typ in ["recommendforyou"]:
