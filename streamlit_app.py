@@ -11,6 +11,7 @@ http = urllib3.PoolManager()
 API_URL = st.text_input("API Base URL", value="https://cf-hapi.halfclub.com/recommend")
 recomm_typ = st.selectbox("추천선택",
     options=[
+        "buyuser",
         "buytogether",
         "buytogetherage",
         "buytogethergender",
