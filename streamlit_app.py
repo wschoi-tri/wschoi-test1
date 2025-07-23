@@ -2,20 +2,17 @@ import streamlit as st
 import requests
 import urllib3
 
-
-st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 
 http = urllib3.PoolManager()
 # 기본 API URL 설정
-# API_URL = st.text_input("API Base URL", value="http://10.254.103.39:8080/recommend")
 API_URL = st.text_input("API Base URL", value="https://cf-hapi.halfclub.com/recommend")
 recomm_typ = st.selectbox("추천선택",
     options=[
-        "buyuser",
         "buytogether",
-        # "buytogetherage",
-        # "buytogethergender",
         "viewtogether",
+        "buyuser",
+        # "category",
         "similaritem",
         "similar-image",
         "recommendforyou",
@@ -47,14 +44,16 @@ with st.form(key="view_form"):
         age = st.selectbox("연령대", options=["01:30대 이하", "02:30대 초과"], index=0)
     if recomm_typ in ["buytogethergender", "buyuser"]:
         gender = st.selectbox("성별", options=["남성01", "여성02"], index=0)
+    if recomm_typ in ["buytogether", "viewtogether", "buyuser"]:
+        self_yn = st.selectbox("self_yn", options=[False, True], index=0)
+        
     k = st.slider(
         "추천 개수 (k)", min_value=1, max_value=500, value=50
     )
     k = st.number_input("추천 개수 (k)", value=k, min_value=1, max_value=500, key="k_input")
     submit_button = st.form_submit_button(label="조회")
 
-def show_image_grid(items, columns_per_row=5, title=None):
-    
+def show_image_grid(items, columns_per_row=5, title=None):    
     if title:
         st.subheader(title)
     try:
@@ -70,9 +69,9 @@ def show_image_grid(items, columns_per_row=5, title=None):
                 with col:
                     if img_url:
                         st.image(img_url, width=240)
-                    if score == 0.0:
+                    if (not score) or score == 0.0:
                         st.markdown(
-                            f"<a href='{url}'>**{prd_no}**</a>", unsafe_allow_html=True
+                            f"<a href='{url}'>**{prd_no}**</a><br>{prd_nm}", unsafe_allow_html=True
                         )
                     else:
                         st.markdown(
@@ -100,6 +99,13 @@ if submit_button:
                 prd_no=int(prd_no),
                 age=age[:2],
                 gender=gender[-2:],
+                self_yn=bool(self_yn),
+                size=int(k)
+            )
+        elif recomm_typ in ["buytogether", "viewtogether"]:
+            params = dict(
+                prd_no=int(prd_no),
+                self_yn=bool(self_yn),
                 size=int(k)
             )
         elif recomm_typ not in ["keyword-search"]:
@@ -163,16 +169,23 @@ if submit_button:
         # 추천 상품 이미지 및 점수
         recs = []
         if recomm_typ not in ["keyword-search"]:
+            if data.get("ml_type", []):
+                if data.get("ml_type") == "ml":
+                    st.text_input("", "신규 추천 조회")
+                else:
+                    st.text_input("", "Self 기존 로직 조회")
+            
             for rec in data.get("result", []):
-                prd_no = rec.get("prd_no")
+                prd_no = rec.get("prdNo")
                 score = rec.get("score", 0.0)
-                prd_nm = rec.get("prd_nm")
-                prd_img = rec.get("prd_img")
-                prd_url = rec.get("prd_url")
-                if recomm_typ in ["buytogetherage"]:
-                    prd_nm = f"연령대: {rec.get("age")}<br/>" + prd_nm
-                elif recomm_typ in ["buytogethergender"]:
+                prd_nm = rec.get("prdNm")
+                prd_img = rec.get("appPrdImgUrl")
+                
+                if rec.get("gender", ""):
                     prd_nm = f"성별: {'남성' if rec.get("gender") == '01' else ('여성' if rec.get("gender") == '02' else '')}<br/>" + prd_nm
+                if rec.get("age", ""):
+                    prd_nm = f"연령: {'30 이하' if rec.get("age") == '01' else ('30 초과' if rec.get("age") == '02' else '')}<br/>" + prd_nm
+                
                 recs.append({"prd_no": prd_no, "score": score, "prd_nm": prd_nm, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": prd_img})
         else:
             for rec in data:
@@ -185,7 +198,10 @@ if submit_button:
         if not recs:
             st.error("리스트 결과 없음")
         else:
-            show_image_grid(recs, columns_per_row=5, title="추천 상품 이미지 및 점수")
+            if self_yn:
+                show_image_grid(recs, columns_per_row=5, title="추천 상품 이미지 및 점수 (자사 로직)")
+            else:
+                show_image_grid(recs, columns_per_row=5, title="추천 상품 이미지 및 점수")
 
     except requests.exceptions.HTTPError as http_err:
         st.error(f"HTTP 에러: {http_err}")
