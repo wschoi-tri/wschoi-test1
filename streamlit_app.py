@@ -20,6 +20,7 @@ recomm_typ = st.selectbox("추천선택",
     ]
 )
 
+self_yn = False
 # 사용자 입력 폼
 with st.form(key="view_form"):
     st.subheader("조회 파라미터")
