@@ -169,7 +169,7 @@ if submit_button:
 
         # 추천 상품 이미지 및 점수
         recs = []
-        if recomm_typ not in ["keyword-search"]:
+        if recomm_typ not in ["keyword-search", "similar-image"]:
             if data.get("ml_type", []):
                 if data.get("ml_type") == "ml":
                     st.text_input("", "신규 추천 조회")
@@ -185,8 +185,16 @@ if submit_button:
                 if rec.get("gender", ""):
                     prd_nm = f"성별: {'남성' if rec.get("gender") == '01' else ('여성' if rec.get("gender") == '02' else '')}<br/>" + prd_nm
                 if rec.get("age", ""):
-                    prd_nm = f"연령: {'30 이하' if rec.get("age") == '01' else ('30 초과' if rec.get("age") == '02' else '')}<br/>" + prd_nm
+                    prd_nm = f"연령: {'40 미만' if rec.get("age") == '01' else ('40 이상' if rec.get("age") == '02' else '')}<br/>" + prd_nm
                 
+                recs.append({"prd_no": prd_no, "score": score, "prd_nm": prd_nm, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": prd_img})
+        elif recomm_typ in ["similar-image"]:
+            for rec in data.get("result", []):
+                prd_no = rec.get("prd_no")
+                score = rec.get("score", 0.0)
+                prd_nm = rec.get("prd_nm")
+                prd_img = rec.get("prd_img")
+
                 recs.append({"prd_no": prd_no, "score": score, "prd_nm": prd_nm, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": prd_img})
         else:
             for rec in data:
