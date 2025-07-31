@@ -36,7 +36,7 @@ with st.form(key="view_form"):
         input_value = "뉴발란스 운동화"
     if recomm_typ in ["recommendforyou"]:
         input_text = "상품번호 리스트 (',' 로 구분)"
-        input_value = "21364890,388857758,391287472"
+        input_value = "391834089,388857758,391287472"
     prd_no = st.text_input(input_text, value=input_value)
     
     age = ""
