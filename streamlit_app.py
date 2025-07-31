@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import urllib3
 
-# st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")
 
 http = urllib3.PoolManager()
 # 기본 API URL 설정
@@ -35,8 +35,8 @@ with st.form(key="view_form"):
         input_text = "검색어"
         input_value = "뉴발란스 운동화"
     if recomm_typ in ["recommendforyou"]:
-        input_text = "회원번호"
-        input_value = "21364890"
+        input_text = "상품번호 리스트 (',' 로 구분)"
+        input_value = "21364890,388857758,391287472"
     prd_no = st.text_input(input_text, value=input_value)
     
     age = ""
@@ -70,14 +70,14 @@ def show_image_grid(items, columns_per_row=5, title=None):
                 score = rec.get("score")
                 with col:
                     if img_url:
-                        st.image(img_url, width=240)
+                        st.image(img_url, width=350)
                     if (not score) or score == 0.0:
                         st.markdown(
-                            f"<a href='{url}'>**{prd_no}**</a><br>{prd_nm}", unsafe_allow_html=True
+                            f"<a href='{url}'>**{prd_no}**</a><br><p style='font-size:11pt;'>{prd_nm}</p>", unsafe_allow_html=True
                         )
                     else:
                         st.markdown(
-                            f"<a href='{url}'>**{prd_no}**</a><br>**Score:** {score:.3f}<br>{prd_nm}", unsafe_allow_html=True
+                            f"<a href='{url}'>**{prd_no}**</a><br><p style='font-size:11pt;'>**Score:** {score:.3f}<br>{prd_nm}</p>", unsafe_allow_html=True
                         )
     except Exception as e:
         st.error(f"이미지 표시 오류: {e}")
@@ -108,6 +108,12 @@ if submit_button:
             params = dict(
                 prd_no=int(prd_no),
                 self_yn=bool(self_yn),
+                size=int(k)
+            )
+        elif recomm_typ in ["recommendforyou"]:
+            params = dict(
+                prd_no_list=[int(x) for x in prd_no.split(",")],
+                # mem_no=int(prd_no),
                 size=int(k)
             )
         elif recomm_typ not in ["keyword-search"]:
@@ -141,7 +147,7 @@ if submit_button:
                 show_image_grid(ori_list, columns_per_row=1, title="원상품 이미지")
             except Exception as e:
                 st.error(f"원상품 이미지 로드 오류: {e}")
-        elif recomm_typ in ["buytogether", "viewtogether", "similaritem", "recommendforyou", "buytogetherage", "buytogethergender", "buyuser", "viewuser"]:
+        elif recomm_typ in ["buytogether", "viewtogether", "similaritem", "buytogetherage", "buytogethergender", "buyuser", "viewuser"]:
             resp_prd_no = data.get("prd_no", prd_no)
             if resp_prd_no == 0:
                 st.error("결과 없음")
@@ -167,15 +173,46 @@ if submit_button:
                     show_image_grid(ori_list, columns_per_row=1, title="원상품 이미지")
                 except Exception as e:
                     st.error(f"원상품 이미지 로드 오류: {e}")
+        elif recomm_typ in ["recommendforyou"]:
+            resp_prd_no = data.get("prd_no_list", [])
+            if not resp_prd_no:
+                st.error("결과 없음")
+            else:
+                ori_list = []
+                for prd_no in resp_prd_no:
+                    try:
+                        ori_img_resp = http.request(
+                            "GET",
+                            f"http://hapix.halfclub.com/searches/prdList/?keyword={prd_no}&siteCd=1&device=mc",
+                        )
+                        if ori_img_resp.status == 200:
+                            j = ori_img_resp.json()
+                            url = j["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
+                            prdNm = j["data"]["result"]["hits"]["hits"][0]["_source"]["prdNm"]
+                            if recomm_typ in ["buytogetherage"]:
+                                prdNm = f"연령대: {age}<br/>" + prdNm
+                            elif recomm_typ in ["buytogethergender"]:
+                                prdNm = f"성별: {'남성' if gender[-2:] == '01' else ('여성' if gender[-2:] == '02' else '선택없음')}<br/>" + prdNm
+                            # elif recomm_typ in ["recommendforyou"]:
+                            #     prdNm = "마지막확인 상품<br/>" + prdNm
+
+                            ori_list.append({"prd_no": prd_no, "score": 1.0, "prd_nm": prdNm, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": url})
+                    except Exception as e:
+                        st.error(f"원상품 이미지 로드 오류: {e}")
+                    
+                if ori_list:
+                    show_image_grid(ori_list, columns_per_row=5, title="원상품 이미지")
 
         # 추천 상품 이미지 및 점수
         recs = []
         if recomm_typ not in ["keyword-search", "similar-image"]:
             if data.get("ml_type", []):
                 if data.get("ml_type") == "ml":
-                    st.text_input("", "신규 추천 조회")
+                    st.text_input("", "ML 추천 결과")
+                    self_yn = False
                 else:
-                    st.text_input("", "Self 기존 로직 조회")
+                    st.text_input("", "대체 조회 결과")
+                    self_yn = True
             
             for rec in data.get("result", []):
                 prd_no = rec.get("prdNo")
@@ -187,7 +224,9 @@ if submit_button:
                     prd_nm = f"성별: {'남성' if rec.get("gender") == '01' else ('여성' if rec.get("gender") == '02' else '')}<br/>" + prd_nm
                 if rec.get("age", ""):
                     prd_nm = f"연령: {'40 미만' if rec.get("age") == '01' else ('40 이상' if rec.get("age") == '02' else '')}<br/>" + prd_nm
-                
+                if rec.get("rcm_prd_no", ""):
+                    prd_nm = prd_nm + f"<br/>원상품:<a href='https://www.halfclub.com/product/{rec.get("rcm_prd_no", "")}'>{rec.get("rcm_prd_no", "")}</a>"
+
                 recs.append({"prd_no": prd_no, "score": score, "prd_nm": prd_nm, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": prd_img})
         elif recomm_typ in ["similar-image"]:
             for rec in data.get("result", []):
@@ -205,13 +244,11 @@ if submit_button:
                 prd_img = rec.get("prd_img")
                 prd_url = rec.get("prd_url")
                 recs.append({"prd_no": prd_no, "score": score, "prd_nm": prd_nm, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": prd_img})
+                
         if not recs:
             st.error("리스트 결과 없음")
         else:
-            if self_yn:
-                show_image_grid(recs, columns_per_row=5, title="추천 상품 이미지 및 점수 (자사 로직)")
-            else:
-                show_image_grid(recs, columns_per_row=5, title="추천 상품 이미지 및 점수")
+            show_image_grid(recs, columns_per_row=5, title="추천 상품 이미지 및 점수")
 
     except requests.exceptions.HTTPError as http_err:
         st.error(f"HTTP 에러: {http_err}")
