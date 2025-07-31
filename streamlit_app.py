@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import urllib3
 
-# st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")
 
 http = urllib3.PoolManager()
 # 기본 API URL 설정
@@ -73,11 +73,11 @@ def show_image_grid(items, columns_per_row=5, title=None):
                         st.image(img_url, width=350)
                     if (not score) or score == 0.0:
                         st.markdown(
-                            f"<a href='{url}'>**{prd_no}**</a><br><p style='font-size:11pt;'>{prd_nm}</p>", unsafe_allow_html=True
+                            f"<a href='{url}'>**{prd_no}**</a><br/><p style='font-size:11pt;'>{prd_nm}</p>", unsafe_allow_html=True
                         )
                     else:
                         st.markdown(
-                            f"<a href='{url}'>**{prd_no}**</a><br><p style='font-size:11pt;'>**Score:** {score:.3f}<br>{prd_nm}</p>", unsafe_allow_html=True
+                            f"<a href='{url}'>**{prd_no}**</a><br/>**Score:** {score:.3f}<br/><p style='font-size:11pt;'>{prd_nm}</p>", unsafe_allow_html=True
                         )
     except Exception as e:
         st.error(f"이미지 표시 오류: {e}")
