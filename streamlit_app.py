@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import urllib3
 
-st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 
 http = urllib3.PoolManager()
 # 기본 API URL 설정
