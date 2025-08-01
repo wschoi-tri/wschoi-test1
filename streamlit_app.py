@@ -135,7 +135,7 @@ if recommend_type in ["keyword-search"]:
     recommend_sample = search_options
     gender_params = search_gender_options
 
-if "recommendforyou" not in st.session_state:
+if "recommendforyou" not in st.session_state or recommend_type not in ["recommendforyou"]:
     st.session_state.recommendforyou = set()
 
 # 선택 토글 함수
