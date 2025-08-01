@@ -51,18 +51,36 @@ select_type = st.selectbox("추천 서비스 유형",
 )
 
 view_options = [
-    {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
-    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
-    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
-    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+    {"prd_nm": "스커트", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+    {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
+    {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+    {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
+    {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
+    {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
+    # {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+    # {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+    # {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+    # {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
 ]
 buy_options = [
+    {"prd_nm": "스커트", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+    {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
+    {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+    {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
+    {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
+    {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
     {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
     {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
     {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
     {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
 ]
 similaritem_options = [
+    {"prd_nm": "스커트", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+    {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
+    {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+    {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
+    {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
+    {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
     {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
     {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
     {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
@@ -117,16 +135,12 @@ if recommend_type in ["keyword-search"]:
     recommend_sample = search_options
     gender_params = search_gender_options
 
+if "recommendforyou" not in st.session_state:
+    st.session_state.recommendforyou = set()
 
-
-
-
-# 선택 상태 저장
-# if "selected" not in st.session_state:
-#     st.session_state.selected = ""
 # 선택 토글 함수
-def toggle_selection(name):
-    st.session_state.selected = name
+# def toggle_selection(name):
+#     st.session_state.selected = name
 
 submit_button = None
 input_yn = st.checkbox("직접입력", value=False, key="direct_input")
@@ -172,20 +186,22 @@ if not input_yn:
         }
         </style>
     """, unsafe_allow_html=True)
-
+    
+    col_count = 6
     if recommend_type in ["keyword-search"]:
         gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
         st.markdown("키워드")
+        col_count = 4
         
     # 이미지 버튼 표시
-    cols = st.columns(4)
+    cols = st.columns(col_count)
     for i, value in enumerate(recommend_sample):
         prd_nm = value.get("prd_nm", "")
         prd_img = value.get("prd_img", "")
         prd_no = value.get("prd_no", "")
         
         selected_class = ""
-        with cols[i % 4]:
+        with cols[i % col_count]:
             btn = st.container()
             with btn:
                 if st.button(
@@ -199,14 +215,18 @@ if not input_yn:
                     if recommend_type in ["keyword-search"]:
                         select_prd_no = str(prd_nm)
                         prd_no  = str(prd_nm)
-                    
-                    # select_prd_no = str(prd_no)
-                    # select_prd_nm = str(prd_nm)
                     st.session_state.selected = prd_nm
-                    # toggle_selection(name)
-                    # get_selected(prd_no, prd_nm)
-                    # run()
+                    
+                    if recommend_type in ["recommendforyou"]:
+                        if prd_no not in st.session_state.recommendforyou:
+                            st.session_state.recommendforyou.add(prd_no)
+                        else:
+                            st.session_state.recommendforyou.remove(prd_no)
+                            selected_class = ""
+
                 if prd_img:
+                    if prd_no in st.session_state.recommendforyou:
+                        selected_class = "selected-btn"
                     st.markdown(
                         f"""
                         <div class="full-btn {selected_class}">
@@ -220,15 +240,6 @@ if not input_yn:
                         """,
                         unsafe_allow_html=True
                     )
-
-        # 현재 선택 상태
-        # if st.session_state.selected:
-        #     st.write("※ 현재 선택된 항목:", st.session_state.selected)
-
-        # # 완료 버튼
-        # if st.button("선택 완료"):
-        #     st.write("선택한 항목으로 진행:")
-        #     st.write(list(st.session_state.selected))
 # 추천 대상 직접 입력
 else:
     with st.form(key="view_form"):
@@ -345,6 +356,11 @@ def submit():
                 gender=selected_gender,
                 limit=int(k)
             )
+        elif recommend_type in ["recommendforyou"]:
+            params = dict(
+                prd_no_list=list(st.session_state.recommendforyou),
+                size=int(k)
+            )
         response = requests.get(f"{API_URL}/{recommend_type}", params=params)
         response.raise_for_status()
         data = response.json()
@@ -363,7 +379,7 @@ def submit():
                     url = j["data"]["result"]["hits"]["hits"][0]["_source"]["appPrdImgUrl"]
                     prdNm = j["data"]["result"]["hits"]["hits"][0]["_source"]["prdNm"]
                     ori_list.append({"prd_no": prd_no, "score": 0.0, "prd_nm": prdNm, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": url})
-                show_image_grid(ori_list, columns_per_row=4, title="추천 대상 상품")
+                show_image_grid(ori_list, columns_per_row=10, title="추천 대상 상품")
             except Exception as e:
                 st.error(f"원상품 이미지 로드 오류: {e}")
         elif recommend_type in ["buytogether", "viewtogether", "similaritem", "buytogetherage", "buytogethergender", "buyuser", "viewuser"]:
@@ -420,7 +436,7 @@ def submit():
                         st.error(f"원상품 이미지 로드 오류: {e}")
                     
                 if ori_list:
-                    show_image_grid(ori_list, columns_per_row=5, title="원상품 이미지")
+                    show_image_grid(ori_list, columns_per_row=6, title="추천 대상 상품")
 
         # 추천 상품 이미지 및 점수
         recs = []
