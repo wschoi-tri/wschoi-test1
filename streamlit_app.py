@@ -56,19 +56,37 @@ view_options = [
     {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
     {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
 ]
+buy_options = [
+    {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+]
+similaritem_options = [
+    {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+]
+similarimage_options = [
+    {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+] 
 search_options = [
     {"prd_nm": "티셔츠", "prd_no": 0, "prd_img": ""},
     {"prd_nm": "운동화", "prd_no": 1, "prd_img": ""},
     {"prd_nm": "닥스", "prd_no": 2, "prd_img": ""},
     {"prd_nm": "헤지스", "prd_no": 3, "prd_img": ""},
-    {"prd_nm": "블라우스", "prd_no": 4, "prd_img": ""},
-    {"prd_nm": "운동화", "prd_no": 5, "prd_img": ""},
-    {"prd_nm": "닥스", "prd_no": 6, "prd_img": ""},
-    {"prd_nm": "헤지스", "prd_no": 7, "prd_img": ""},
-    {"prd_nm": "블라우스", "prd_no": 8, "prd_img": ""},
-    {"prd_nm": "운동화", "prd_no": 9, "prd_img": ""},
-    {"prd_nm": "닥스", "prd_no": 10, "prd_img": ""},
-    {"prd_nm": "헤지스", "prd_no": 11, "prd_img": ""}
+    {"prd_nm": "자켓", "prd_no": 4, "prd_img": ""},
+    {"prd_nm": "골프화", "prd_no": 5, "prd_img": ""},
+    {"prd_nm": "팬츠", "prd_no": 6, "prd_img": ""},
+    {"prd_nm": "니트", "prd_no": 7, "prd_img": ""},
+    {"prd_nm": "지갑", "prd_no": 8, "prd_img": ""},
+    {"prd_nm": "CNN APPAREL", "prd_no": 9, "prd_img": ""},
+    {"prd_nm": "팬암", "prd_no": 10, "prd_img": ""},
+    {"prd_nm": "폴로랄프로렌", "prd_no": 11, "prd_img": ""}
 ]
 search_gender_options = {
     "남성": "male",
@@ -155,6 +173,10 @@ if not input_yn:
         </style>
     """, unsafe_allow_html=True)
 
+    if recommend_type in ["keyword-search"]:
+        gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
+        st.markdown("키워드")
+        
     # 이미지 버튼 표시
     cols = st.columns(4)
     for i, value in enumerate(recommend_sample):
@@ -198,8 +220,6 @@ if not input_yn:
                         """,
                         unsafe_allow_html=True
                     )
-    if recommend_type in ["keyword-search"]:
-        gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
 
         # 현재 선택 상태
         # if st.session_state.selected:
