@@ -42,7 +42,7 @@ view_options = [
     {"prd_nm": "자켓", "prd_no": 388857787, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000319/P388857787/1_P388857787_basic_1748306210368.jpg?format=webp"},
     {"prd_nm": "골프", "prd_no": 360321880, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1939/P360321880/1_P360321880_basic_1712804679955.jpg?format=webp"},
     {"prd_nm": "스포츠", "prd_no": 393854538, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004454/P393854538/1_P393854538_basic_1746690189142.jpg?format=webp"},
-    {"prd_nm": "아웃도어", "prd_no": 358266870, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A4192/P358266870/1_P358266870_basic_1743641693773.jpg?format=webp"},
+    {"prd_nm": "아웃도어", "prd_no": 392879248, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004416/P392879248/1_P392879248_basic_1749776418523.jpg?format=webp"},
 ]
 search_options = [
     {"prd_nm": "티셔츠", "prd_no": 0, "prd_img": ""},
