@@ -4,26 +4,18 @@ import urllib3
 
 http = urllib3.PoolManager()
 
-# st.set_page_config(
-#     page_title="추천 서비스 (ML)",
-#     layout="wide",
-# )
 st.header("추천 서비스 (ML)")
-
+# st.subheader("추천 서비스 조회")
 
 API_URL = "https://cf-hapi.halfclub.com/recommend"
 self_yn = False
 k = 50
-
 select_prd_no = ""
 select_prd_nm = ""
 recomm_typ = ""
 age = ""
 gender = ""
 
-
-
-st.subheader("추천 서비스 조회")
 
 # 추천 서비스 유형
 ml_types = [
@@ -36,21 +28,9 @@ ml_types = [
     {"개인화 추천": "recommendforyou"},
     {"검색 개인화": "keyword-search"}
 ]
-select_type = st.selectbox("추천 서비스 유형",
-    options=[
-        list(ml_types[0].keys())[0],
-        # list(ml_types[1].keys())[0],
-        list(ml_types[2].keys())[0],
-        # list(ml_types[3].keys())[0],
-        list(ml_types[4].keys())[0],
-        list(ml_types[5].keys())[0],
-        list(ml_types[6].keys())[0],
-        list(ml_types[7].keys())[0]
-    ]
-)
 
 view_options = [
-    {"prd_nm": "스커트1", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+    {"prd_nm": "스커트", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
     {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
     {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
     {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
@@ -61,72 +41,72 @@ view_options = [
     # {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
     # {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
 ]
-viewuser_options = [
-    {"prd_nm": "스커트11", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
-    {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
-    {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
-    {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
-    # {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
-    # {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
-    # {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
-    # {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
-]
-buy_options = [
-    {"prd_nm": "스커트2", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
-    {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
-    {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
-    {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
-    {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
-    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
-    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
-    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
-]
-buyuser_options = [
-    {"prd_nm": "스커트22", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
-    {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
-    {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
-    {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
-    {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
-    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
-    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
-    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
-]
-similaritem_options = [
-    {"prd_nm": "스커트3", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
-    {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
-    {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
-    {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
-    {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
-    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
-    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
-    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
-]
-recommendforyou_options = [
-    {"prd_nm": "스커트4", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
-    {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
-    {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
-    {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
-    {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
-    {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
-    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
-    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
-    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
-]
-similarimage_options = [
-    {"prd_nm": "티셔츠4", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
-    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
-    {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
-    {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
-] 
+# viewuser_options = [
+#     {"prd_nm": "스커트11", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+#     {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+#     {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
+#     {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
+#     # {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+#     # {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+#     # {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+#     # {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+# ]
+# buy_options = [
+#     {"prd_nm": "스커트2", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+#     {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+#     {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
+#     {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
+#     {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+#     {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+#     {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+#     {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+# ]
+# buyuser_options = [
+#     {"prd_nm": "스커트22", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+#     {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+#     {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
+#     {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
+#     {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+#     {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+#     {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+#     {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+# ]
+# similaritem_options = [
+#     {"prd_nm": "스커트3", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+#     {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+#     {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
+#     {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
+#     {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+#     {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+#     {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+#     {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+# ]
+# recommendforyou_options = [
+#     {"prd_nm": "스커트4", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
+#     {"prd_nm": "여성자켓", "prd_no": 386363240, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A7939/P386363240/1_P386363240_basic_1748582603573.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+#     {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
+#     {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
+#     {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
+#     {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+#     {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+#     {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+#     {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+# ]
+# similarimage_options = [
+#     {"prd_nm": "티셔츠4", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
+#     {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
+#     {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
+#     {"prd_nm": "롱코트", "prd_no": 353797397, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2703/P353797397/1_P353797397_basic_1705311770902.jpg?format=webp"}
+# ] 
 search_options = [
     {"prd_nm": "티셔츠", "prd_no": 0, "prd_img": ""},
     {"prd_nm": "운동화", "prd_no": 1, "prd_img": ""},
@@ -153,160 +133,157 @@ age_options = {
     "40대 미만": "01",
     "40대 이상": "02"
 }
-
-recommend_type = ""
-recommend_type_nm = ""
-for item in ml_types:
-    if list(item.keys())[0] == select_type:
-        recommend_type = list(item.values())[0]
-        recommend_type_nm = list(item.keys())[0]
-        break
-
-input_yn = st.checkbox("직접입력", value=False, key="direct_input")
-
-if recommend_type in ["keyword-search"]:
-    gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
-elif recommend_type in ["buytogether", "viewtogether"]:
-    user_yn = st.checkbox("회원 유형 선택", value=False, key="user_chk_input")
-    if user_yn:
-        age = st.selectbox("나이 (40대 미만, 이상)", options=["", "40대 미만", "40대 이상"], index=0)
-        if age:
-            gender = st.selectbox("성별", options=["남성", "여성"], index=0)
-        else:
-            gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
-            
 recommend_sample = view_options
 gender_params = gender_options
 age_params = age_options
+select_type = "함께 본 상품"
+input_yn = False
+user_yn = False
 
-# 추천에 따른 대상 리스트 설정
-if recommend_type in ["keyword-search"]:
+recommend_type = ""
+recommend_type_nm = ""
+
+service_type = st.selectbox("서비스 구분", options=["추천", "검색"])
+if service_type == "검색":
     recommend_sample = search_options
     gender_params = search_gender_options
-elif recommend_type in ["viewtogether", "viewuser"]:
-    if user_yn:
-        recommend_sample = viewuser_options
-    else:
-        recommend_sample = view_options
-elif recommend_type in ["buytogether", "buyuser"]:
-    if user_yn:
-        recommend_sample = buyuser_options
-    else:
-        recommend_sample = buy_options
-elif recommend_type in ["similaritem"]:
-    recommend_sample = similaritem_options
-elif recommend_type in ["similar-image"]:
-    recommend_sample = similarimage_options
-elif recommend_type in ["recommendforyou"]:
-    recommend_sample = recommendforyou_options
+    select_type = "검색 개인화"
+    recommend_type = "keyword-search"
+    recommend_type_nm = "검색 개인화"
 
-
-if "recommendforyou" not in st.session_state or recommend_type not in ["recommendforyou"]:
-    st.session_state.recommendforyou = set()
-    
-if "gender" not in st.session_state or recommend_type not in ["buyuser", "viewuser"]:
+if "gender" not in st.session_state:
     st.session_state.gender = ""
-    
-if "age" not in st.session_state or recommend_type not in ["buyuser", "viewuser"]:
+if "age" not in st.session_state:
     st.session_state.age = ""
+if "prd_no" not in st.session_state:
+    st.session_state.prd_no = ""
+if "prd_nm" not in st.session_state:
+    st.session_state.prd_nm = ""
+if "prd_no_list" not in st.session_state:
+    st.session_state.prd_no_list = set()
 
+# 추천 대상 이미지 버튼 CSS 설정
+st.markdown("""
+    <style>
+    .full-btn > button {
+        width: 100% !important;
+        height: auto !important;
+        padding: 0 !important;
+        border: 3px solid transparent;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .full-btn > button:hover {
+        border-color: #aaa;
+    }
+    .full-btn {
+        margin-bottom: 10px;
+    }
+    .selected-btn > button {
+        border-color: #ff4b4b !important;
+    }
+    .btn-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .btn-content img {
+        width: 55%;
+        height: auto;
+    }
+    .btn-text {
+        font-weight: bold;
+        font-size: 16px;
+        padding: 8px;
+        text-align: center;
+        width: 100%;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-submit_button = None
-
-            
-# 추천 대상 이미지 선택
-if not input_yn:
-    # 추천 대상 이미지 버튼 CSS 설정
-    st.markdown("""
-        <style>
-        .full-btn > button {
-            width: 100% !important;
-            height: auto !important;
-            padding: 0 !important;
-            border: 3px solid transparent;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .full-btn > button:hover {
-            border-color: #aaa;
-        }
-        .full-btn {
-            margin-bottom: 10px;
-        }
-        .selected-btn > button {
-            border-color: #ff4b4b !important;
-        }
-        .btn-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .btn-content img {
-            width: 55%;
-            height: auto;
-        }
-        .btn-text {
-            font-weight: bold;
-            font-size: 16px;
-            padding: 8px;
-            text-align: center;
-            width: 100%;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+col_count = 6
+if service_type == "검색":
+    st.markdown("검색 키워드 선택")
+    col_count = 4
+else:
+    st.markdown("추천 상품 선택")
     
-    col_count = 6
-    if recommend_type in ["keyword-search"]:
-        st.markdown("검색 키워드 선택")
-        col_count = 4
-        
-    # 이미지 버튼 표시
-    cols = st.columns(col_count)
-    for i, value in enumerate(recommend_sample):
-        prd_nm = value.get("prd_nm", "")
-        prd_img = value.get("prd_img", "")
-        prd_no = value.get("prd_no", "")
-        
-        selected_class = ""
-        with cols[i % col_count]:
-            btn = st.container()
-            with btn:
-                if st.button(
-                    label=prd_nm,
-                    key=f"btn_{prd_no}",
-                    # help=prd_nm,
-                    use_container_width=True
+# 이미지 버튼 표시
+cols = st.columns(col_count)
+for i, value in enumerate(recommend_sample):
+    prd_nm = value.get("prd_nm", "")
+    prd_img = value.get("prd_img", "")
+    prd_no = value.get("prd_no", "")
+    
+    selected_class = ""
+    with cols[i % col_count]:
+        btn = st.container()
+        with btn:
+            if st.button(
+                label=prd_nm,
+                key=f"btn_{prd_no}",
+                # help=prd_nm,
+                use_container_width=True
+            ):
+                # 선택 표시
+                selected_class = "selected-btn"
+                
+                # 선택 상품/키워드
+                select_prd_no = str(prd_no)
+                st.session_state.prd_no = str(prd_no)
+                select_prd_nm = str(prd_nm)
+                st.session_state.prd_nm = str(prd_nm)
+                if prd_no not in st.session_state.prd_no_list:
+                    st.session_state.prd_no_list.add(prd_no)
+                else:
+                    st.session_state.prd_no_list.remove(prd_no)
+                    selected_class = ""
+            if prd_img:
+                if (
+                    st.session_state.prd_no_list
+                    and len(st.session_state.prd_no_list) > 1
+                    and prd_no in st.session_state.prd_no_list
                 ):
                     selected_class = "selected-btn"
-                    select_prd_no = str(prd_no)
-                    if recommend_type in ["keyword-search"]:
-                        select_prd_no = str(prd_nm)
-                        prd_no  = str(prd_nm)
-                    st.session_state.selected = prd_nm
-                    
-                    if recommend_type in ["recommendforyou"]:
-                        if prd_no not in st.session_state.recommendforyou:
-                            st.session_state.recommendforyou.add(prd_no)
-                        else:
-                            st.session_state.recommendforyou.remove(prd_no)
-                            selected_class = ""
-                if prd_img:
-                    if prd_no in st.session_state.recommendforyou:
-                        selected_class = "selected-btn"
-                    st.markdown(
-                        f"""
-                        <div class="full-btn {selected_class}">
-                            <div class="btn-content">
-                                <img src="{prd_img}" />
-                                <a href="https://www.halfclub.com/product/{prd_no}">{prd_no}</a>
-                            </div>
+                st.markdown(
+                    f"""
+                    <div class="full-btn {selected_class}">
+                        <div class="btn-content">
+                            <img src="{prd_img}" />
+                            <a href="https://www.halfclub.com/product/{prd_no}">{prd_no}</a>
                         </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-# 추천 대상 직접 입력
-else:
-                
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+# 가로선
+st.markdown("---")
+
+if service_type == "추천":
+    select_type = st.selectbox("추천 서비스 유형",
+        options=[
+            list(ml_types[0].keys())[0],
+            # list(ml_types[1].keys())[0],
+            list(ml_types[2].keys())[0],
+            # list(ml_types[3].keys())[0],
+            list(ml_types[4].keys())[0],
+            list(ml_types[5].keys())[0],
+            list(ml_types[6].keys())[0],
+            # list(ml_types[7].keys())[0]
+        ]
+    )
+    for item in ml_types:
+        if list(item.keys())[0] == select_type:
+            recommend_type = list(item.values())[0]
+            recommend_type_nm = list(item.keys())[0]
+            break
+
+# 직접입력 체크박스
+input_yn = st.checkbox("직접입력", value=False, key="direct_input")
+
+submit_button = None
+# 직접 입력 표시
+if input_yn:
     with st.form(key="view_form"):
         input_text = "상품번호"
         input_value = ""
@@ -315,9 +292,33 @@ else:
         elif recommend_type in ["recommendforyou"]:
             input_text = "상품번호 리스트 (ex. 상품번호1,상품번호2,상품번호3)"
         prd_no = st.text_input(input_text, value=input_value)
-        
         submit_button = st.form_submit_button(label="조회")
+        
+# 성별선택 체크박스
+if recommend_type in ["keyword-search"]:
+    gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
+    if gender:
+        user_yn = True
+        st.session_state.gender = gender
+elif recommend_type in ["buytogether", "viewtogether"]:
+    user_yn = st.checkbox("회원 유형 선택", value=False, key="user_chk_input")
+    if user_yn:
+        age = st.selectbox("나이 (40대 미만, 이상)", options=["", "40대 미만", "40대 이상"], index=0)
+        if age:
+            gender = st.selectbox("성별", options=["남성", "여성"], index=0)
+        else:
+            gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
+        if age:
+            st.session_state.age = age
+            st.session_state.gender = gender
 
+if recommend_type not in ["recommendforyou"]:
+    st.session_state.prd_no_list = set()
+    
+if user_yn == False:
+    st.session_state.age = ""
+    st.session_state.gender = ""
+    
 # 가로선
 st.markdown("---")
 
@@ -327,8 +328,8 @@ def show_target(items, columns_per_row=5, title=None):
         if input_yn:
             title = title + ": 직접 입력"
         else:
-            if st.session_state.selected:
-                title = title + f": {st.session_state.selected}"
+            if st.session_state.prd_nm:
+                title = title + f": {st.session_state.prd_nm}"
         st.subheader(title)
     try:
         rows = [items[i: i + columns_per_row] for i in range(0, len(items), columns_per_row)]
@@ -362,7 +363,7 @@ def show_grid(items, columns_per_row=5, title=None, img_width=220):
                 prd_nm = rec.get("prd_nm")
                 with col:
                     if img_url:
-                        # if score:
+                        # if score<0.5:
                         #     st.markdown(f"<p style='font-size:11pt;margin:0;padding:0;'>상품: <a href='{url}'>{prd_no}</a><br/>추천 스코어: {score:.3f}</p>", unsafe_allow_html=True)
                         # else:
                         #     st.markdown(f"<p style='font-size:11pt;margin:0;padding:0;'>상품: <a href='{url}'>{prd_no}</a></p>", unsafe_allow_html=True)
@@ -381,7 +382,7 @@ def submit():
     if not select_type:
         return
     # 상품 번호 입력
-    if not select_prd_no:
+    if not select_prd_no and not select_prd_nm:
         return
     
     try:
@@ -431,13 +432,13 @@ def submit():
                         selected_gender = search_gender_options[item]
                         break
             params = dict(
-                keyword=select_prd_no,
+                keyword=select_prd_nm,
                 gender=selected_gender,
                 limit=int(k)
             )
         elif recommend_type in ["recommendforyou"]:
             params = dict(
-                prd_no_list=list(st.session_state.recommendforyou),
+                prd_no_list=list(st.session_state.prd_no_list),
                 size=int(k)
             )
         else:
@@ -452,9 +453,9 @@ def submit():
         # 추천 대상 상품 표시
         if recommend_type in ["keyword-search"]:
             if gender:
-                st.subheader(f"검색 키워드: {select_prd_no} ({gender})")
+                st.subheader(f"검색 키워드: {select_prd_nm} ({gender})")
             else:
-                st.subheader(f"검색 키워드: {select_prd_no}")
+                st.subheader(f"검색 키워드: {select_prd_nm}")
             # 가로선
             st.markdown("---")
         else:
