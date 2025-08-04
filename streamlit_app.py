@@ -33,7 +33,7 @@ view_options = [
     {"prd_nm": "여성의류", "prd_no": 361045626, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A2421/P361045626/1_P361045626_basic_1722239458982.jpg?format=webp"},
     {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/586x751/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
     {"prd_nm": "스커트", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
-    {"prd_nm": "코트", "prd_no": 384872711, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1394/P384872711/1_P384872711_basic_1741942329851.jpg?format=webp"},
+    {"prd_nm": "자켓", "prd_no": 393954850, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004142/P393954850/1_P393954850_basic_1746779678271.jpg?format=webp"},
     {"prd_nm": "신발", "prd_no": 395737368, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A3317/P395737368/1_P395737368_basic_1748411615811.jpg?format=webp"},
     {"prd_nm": "여성가방", "prd_no": 380122213, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P341524391/1_P341524391_basic_1731682050469.jpg?format=webp"},
     
