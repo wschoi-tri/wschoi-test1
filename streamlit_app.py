@@ -161,18 +161,20 @@ if "age" not in st.session_state:
 else:
     age = st.session_state.age
     
+if "prd_no_list" not in st.session_state:
+    st.session_state.prd_no_list = set()
+    
 if "prd_no" not in st.session_state:
     st.session_state.prd_no = ""
 else:
     select_prd_no = st.session_state.prd_no
+    st.session_state.prd_no_list.add(select_prd_no)
     
 if "prd_nm" not in st.session_state:
     st.session_state.prd_nm = ""
 else:
     select_prd_nm = st.session_state.prd_nm
     
-if "prd_no_list" not in st.session_state:
-    st.session_state.prd_no_list = set()
 
 # 추천 대상 이미지 버튼 CSS 설정
 st.markdown("""
