@@ -35,7 +35,8 @@ view_options = [
     {"prd_nm": "스커트", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
     {"prd_nm": "자켓", "prd_no": 393954850, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004142/P393954850/1_P393954850_basic_1746779678271.jpg?format=webp"},
     {"prd_nm": "여성가방", "prd_no": 380122213, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P341524391/1_P341524391_basic_1731682050469.jpg?format=webp"},
-    {"prd_nm": "아웃도어", "prd_no": 392879248, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004416/P392879248/1_P392879248_basic_1749776418523.jpg?format=webp"},
+    {"prd_nm": "아웃도어", "prd_no": 358266870, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A4192/P358266870/1_P358266870_basic_1743641693773.jpg?format=webp"},
+    # {"prd_nm": "아웃도어", "prd_no": 392879248, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004416/P392879248/1_P392879248_basic_1749776418523.jpg?format=webp"},
     
     {"prd_nm": "셔츠", "prd_no": 380125465, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P353033327/1_P353033327_basic_1736536730865.jpg?format=webp"},
     {"prd_nm": "티셔츠", "prd_no": 397585041, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004976/P397585041/1_P397585041_basic_1749777889548.jpg?format=webp"},
