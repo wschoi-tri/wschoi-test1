@@ -36,6 +36,7 @@ view_options = [
     {"prd_nm": "여성데님", "prd_no": 354854282, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004354/P354854282/1_P354854282_basic_1751338090084.jpg?format=webp"},
     {"prd_nm": "여성코트", "prd_no": 348548747, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P348548747/1_P348548747_basic_1697433371437.jpg?format=webp"},
     {"prd_nm": "여성가방", "prd_no": 352872450, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P352872450/1_P352872450_basic_1754027266655.jpg?format=webp"},
+    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/586x751/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
     # {"prd_nm": "티셔츠", "prd_no": 395848372, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004785/P395848372/1_P395848372_basic_1750035972338.jpg?format=webp"},
     # {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
     # {"prd_nm": "골프웨어", "prd_no": 398183077, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003881/P398183077/1_P398183077_basic_1750813492910.jpg?format=webp"},
@@ -169,13 +170,20 @@ if "prd_no" not in st.session_state:
     st.session_state.prd_no = ""
 else:
     select_prd_no = st.session_state.prd_no
-    st.session_state.prd_no_list.add(select_prd_no)
+    if select_prd_no:
+        st.session_state.prd_no_list.add(str(select_prd_no))
     
 if "prd_nm" not in st.session_state:
     st.session_state.prd_nm = ""
 else:
     select_prd_nm = st.session_state.prd_nm
 
+if "type" not in st.session_state:
+    st.session_state.type = ""
+if "type_nm" not in st.session_state:
+    st.session_state.type_nm = ""
+if "show_type" not in st.session_state:
+    st.session_state.show_type = ""
 
 #  추천 대상 상품 표시
 def show_target(items, columns_per_row=5, title=None):    
@@ -303,11 +311,16 @@ for i, value in enumerate(recommend_sample):
                 st.session_state.prd_no = str(prd_no)
                 select_prd_nm = str(prd_nm)
                 st.session_state.prd_nm = str(prd_nm)
-                if prd_no not in st.session_state.prd_no_list:
-                    st.session_state.prd_no_list.add(prd_no)
+    
+                if st.session_state.type in ["recommendforyou"]:
+                    if str(prd_no) not in st.session_state.prd_no_list:
+                        st.session_state.prd_no_list.add(str(prd_no))
+                    else:
+                        st.session_state.prd_no_list.remove(str(prd_no))
+                        selected_class = ""
                 else:
-                    st.session_state.prd_no_list.remove(prd_no)
-                    selected_class = ""
+                    st.session_state.prd_no_list = set()
+                    st.session_state.prd_no_list.add(str(prd_no))
             if prd_img:
                 if (
                     st.session_state.prd_no_list
@@ -340,6 +353,7 @@ st.markdown("---")
 # else:
 def show_target_list():
     if service_type != "검색":
+        st.session_state.show_type = st.session_state.type
         if select_prd_no or st.session_state.prd_no_list:
             with st.container():
                 prd_no_list = []
@@ -422,7 +436,9 @@ if service_type == "추천":
     for item in ml_types:
         if list(item.keys())[0] == select_type:
             recommend_type = list(item.values())[0]
+            st.session_state.type = recommend_type
             recommend_type_nm = list(item.keys())[0]
+            st.session_state.type_nm = recommend_type_nm
             break
 
 # 직접입력 체크박스
@@ -703,13 +719,21 @@ if submit_button:
             st.session_state.age = age
     if recommend_type in ["recommendforyou"]:
         if prd_no:
-            st.session_state.pre_no_list = set()
+            st.session_state.prd_no_list = set()
             for prd in prd_no.split(","):
-                st.session_state.pre_no_list.add(prd)
+                st.session_state.prd_no_list.add(prd)
     submit()
 elif submit:
     if recommend_type in ["keyword-search"]:
         if gender:
             st.session_state.gender = gender
+    if recommend_type not in ["recommendforyou"]:
+        st.session_state.prd_no_list = set()
+        
+    if st.session_state.show_type != recommend_type:
+        if st.session_state.show_type in ["recommendforyou"]:
+            st.session_state.prd_no_list = set()
+        st.rerun()
+
     submit()
 
