@@ -35,7 +35,7 @@ view_options = [
     {"prd_nm": "스커트", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
     {"prd_nm": "자켓", "prd_no": 393954850, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004142/P393954850/1_P393954850_basic_1746779678271.jpg?format=webp"},
     {"prd_nm": "티셔츠", "prd_no": 391016367, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004771/P391016367/1_P391016367_basic_1753929748568.jpg?format=webp"},
-    {"prd_nm": "가방", "prd_no": 380122213, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P341524391/1_P341524391_basic_1731682050469.jpg?format=webp"},
+    {"prd_nm": "가방", "prd_no": 377294259, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A8643/P377294259/1_P377294259_basic_1731377249157.jpg?format=webp"},
     
     {"prd_nm": "정장", "prd_no": 359743470, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A3987/P359743470/1_P359743470_basic_1721809965686.jpg?format=webp"},
     {"prd_nm": "셔츠", "prd_no": 380125465, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P353033327/1_P353033327_basic_1736536730865.jpg?format=webp"},
