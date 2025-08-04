@@ -184,6 +184,8 @@ if "type_nm" not in st.session_state:
     st.session_state.type_nm = ""
 if "show_type" not in st.session_state:
     st.session_state.show_type = ""
+if "show_prd" not in st.session_state:
+    st.session_state.show_prd = []
 
 #  추천 대상 상품 표시
 def show_target(items, columns_per_row=5, title=None):    
@@ -362,6 +364,7 @@ def show_target_list():
                 else:
                     prd_no_list = [select_prd_no]
                 ori_prd_list = []
+                st.session_state.show_prd = prd_no_list
                 for resp_prd_no in prd_no_list:
                     ori_img_resp = http.request(
                         "GET",
@@ -711,6 +714,9 @@ def submit():
 # 폼 제출 시 API 호출 및 이미지 표시
 if submit_button:
     select_prd_no = prd_no
+    st.session_state.prd_no = select_prd_no
+    st.session_state.prd_nm = "직접입력"
+    
     if recommend_type in ["buytogether","viewtogether","keyword-search"]:
         if gender:
             st.session_state.gender = gender
@@ -722,6 +728,8 @@ if submit_button:
             st.session_state.prd_no_list = set()
             for prd in prd_no.split(","):
                 st.session_state.prd_no_list.add(prd)
+            if st.session_state.show_prd != st.session_state.prd_no_list:
+                st.rerun()
     submit()
 elif submit:
     if recommend_type in ["keyword-search"]:
