@@ -153,12 +153,24 @@ if service_type == "검색":
 
 if "gender" not in st.session_state:
     st.session_state.gender = ""
+else:
+    gender = st.session_state.gender
+    
 if "age" not in st.session_state:
     st.session_state.age = ""
+else:
+    age = st.session_state.age
+    
 if "prd_no" not in st.session_state:
     st.session_state.prd_no = ""
+else:
+    select_prd_no = st.session_state.prd_no
+    
 if "prd_nm" not in st.session_state:
     st.session_state.prd_nm = ""
+else:
+    select_prd_nm = st.session_state.prd_nm
+    
 if "prd_no_list" not in st.session_state:
     st.session_state.prd_no_list = set()
 
