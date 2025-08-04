@@ -716,6 +716,7 @@ if submit_button:
     select_prd_no = prd_no
     st.session_state.prd_no = select_prd_no
     st.session_state.prd_nm = "직접입력"
+    st.rerun()
     
     if recommend_type in ["buytogether","viewtogether","keyword-search"]:
         if gender:
