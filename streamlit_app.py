@@ -43,7 +43,7 @@ view_options = [
     {"prd_nm": "정장자켓", "prd_no": 359743470, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A3987/P359743470/1_P359743470_basic_1721809965686.jpg?format=webp"},
     {"prd_nm": "골프웨어", "prd_no": 360321880, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1939/P360321880/1_P360321880_basic_1712804679955.jpg?format=webp"},
     {"prd_nm": "스포츠웨어", "prd_no": 393854538, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004454/P393854538/1_P393854538_basic_1746690189142.jpg?format=webp"},
-    {"prd_nm": "남성자켓", "prd_no": 401738439, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA002452/P401738439/1_P401738439_basic_1752729517328.jpg?format=webp"},
+    {"prd_nm": "남성자켓", "prd_no": 388857787, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000319/P388857787/1_P388857787_basic_1748306210368.jpg?format=webp"},
 ]
 # viewuser_options = [
 #     {"prd_nm": "스커트11", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
