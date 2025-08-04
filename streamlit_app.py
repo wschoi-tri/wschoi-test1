@@ -551,8 +551,8 @@ def submit():
                 st.subheader(f"검색 키워드: {select_prd_nm}")
             # 가로선
             st.markdown("---")
-        else:
-            show_target_list()
+        # else:
+        #     show_target_list()
         # else:
         #     prd_no_list = []
         #     if "prd_no_list" in data:
