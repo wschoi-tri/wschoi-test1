@@ -588,6 +588,8 @@ def submit():
             if ml_type:
                 if ml_type == "ml":
                     recs_title = recs_title + f": {recommend_type_nm} ML"
+                else:
+                    recs_title = recs_title + f": {recommend_type_nm}"
             else:
                 recs_title = recs_title + f": {recommend_type_nm}"
                             
