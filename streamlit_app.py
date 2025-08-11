@@ -9,7 +9,7 @@ st.header("추천 서비스 (ML)")
 
 API_URL = "https://cf-hapi.halfclub.com/recommend"
 self_yn = False
-k = 50
+k = 100
 select_prd_no = ""
 select_prd_nm = ""
 recomm_typ = ""
