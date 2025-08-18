@@ -6,7 +6,7 @@ http = urllib3.PoolManager()
 
 # 페이지 설정
 st.set_page_config(
-    page_title="AI 상품 추천 서비스",
+    page_title="상품 추천 서비스",
     page_icon="🛍️",
     layout="centered",
     initial_sidebar_state="collapsed"
