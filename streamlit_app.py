@@ -285,7 +285,10 @@ def show_grid(items, columns_per_row=5, title=None, img_width=220):
                 prd_nm = rec.get("prd_nm")
                 with col:
                     if img_url:
-                        st.image(img_url, width=img_width)
+                        st.markdown(
+                            f'<div style="text-align: center; width: {img_width}px; height: {int(img_width * 1.2)}px; overflow: hidden; border-radius: 8px; margin: 0 auto;"><img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;"></div>',
+                            unsafe_allow_html=True
+                        )
                         st.markdown(prd_nm, unsafe_allow_html=True)
                     else:
                         continue
@@ -337,8 +340,9 @@ st.markdown("""
         align-items: center;
     }
     .btn-content img {
-        width: 55%;
-        height: auto;
+        width: 80px;
+        height: 100px;
+        object-fit: cover;
     }
     .btn-text {
         font-weight: bold;
@@ -494,7 +498,7 @@ def show_target_list():
                     if len(ori_prd_list) == 1:
                         show_target(ori_prd_list, columns_per_row=1, title="추천 대상 상품")
                     else:
-                        show_grid(ori_prd_list, columns_per_row=5, title="추천 대상 상품", img_width=130)
+                        show_grid(ori_prd_list, columns_per_row=5, title="추천 대상 상품", img_width=100)
 show_target_list()
 
 
@@ -810,7 +814,7 @@ def submit():
             display_count = (total_count // 4) * 4
             if display_count > 0:
                 recs = recs[:display_count]
-            show_grid(recs, columns_per_row=4, title=recs_title)
+            show_grid(recs, columns_per_row=4, title=recs_title, img_width=150)
 
     except requests.exceptions.Timeout:
         st.error("API 요청 시간이 초과되었습니다.")
