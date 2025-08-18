@@ -5,7 +5,41 @@ import urllib3
 http = urllib3.PoolManager()
 
 st.header("추천 서비스 (ML)")
-# st.subheader("추천 서비스 조회")
+
+# URL 파라미터 처리
+query_params = st.query_params
+url_site = query_params.get("siteCd", "1")
+url_type = query_params.get("mlType", "")
+url_prd = query_params.get("prdNo", "")
+
+# 기본 사이트 설정
+if "siteCd" not in query_params:
+    st.query_params["siteCd"] = "1"
+
+site_cd = st.selectbox("사이트 선택", options=[1, 2], format_func=lambda x: "하프클럽" if x == 1 else "보리보리", index=int(url_site)-1 if url_site in ["1", "2"] else 0)
+
+# 사이트 선택 시 URL 업데이트
+if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
+    st.query_params["siteCd"] = str(site_cd)
+
+# 초기화 버튼
+if st.button("🔄 초기화", type="secondary"):
+    # 세션 상태 초기화
+    st.session_state.prd_no_list = set()
+    st.session_state.prd_no = ""
+    st.session_state.prd_nm = ""
+    st.session_state.gender = ""
+    st.session_state.age = ""
+    st.session_state.type = ""
+    st.session_state.type_nm = ""
+    st.session_state.show_type = ""
+    st.session_state.show_prd = []
+    if 'last_api_url' in st.session_state:
+        del st.session_state.last_api_url
+    # URL 파라미터 초기화 (사이트 코드만 유지)
+    st.query_params.clear()
+    st.query_params["siteCd"] = str(site_cd)
+    st.rerun()
 
 API_URL = "https://cf-hapi.halfclub.com/recommend"
 self_yn = False
@@ -17,7 +51,6 @@ age = ""
 gender = ""
 
 
-# 추천 서비스 유형
 ml_types = [
     {"함께 본 상품 (view-together)": "viewtogether"},
     {"함께 본 상품 (연령/성별)": "viewuser"},
@@ -29,20 +62,100 @@ ml_types = [
     {"검색 개인화 (keyword-search)": "keyword-search"}
 ]
 
-view_options = [
-    {"prd_nm": "가디건", "prd_no": 380118214, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P342026722/1_P342026722_basic_1730390799367.jpg?format=webp"},
-    {"prd_nm": "원피스", "prd_no": 402544118, "prd_img": "https://cdn2.halfclub.com/rimg/586x751/contain/cdn/product/A1863/P402544118/1_P402544118_basic_1753455065108.jpg?format=webp"},
-    {"prd_nm": "스커트", "prd_no": 379859455, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000697/P379859455/1_P379859455_basic_1753948523039.jpg?format=webp"},
-    {"prd_nm": "자켓", "prd_no": 393954850, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004142/P393954850/1_P393954850_basic_1746779678271.jpg?format=webp"},
-    {"prd_nm": "티셔츠", "prd_no": 391016367, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004771/P391016367/1_P391016367_basic_1753929748568.jpg?format=webp"},
-    {"prd_nm": "가방", "prd_no": 380115991, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P341908398/1_P341908398_basic_1731372374604.jpg?format=webp"},
+def get_best_products(site_cd):
+    try:
+        if site_cd == 1:
+            url = "https://hapix.halfclub.com/searches/best/?offset=0&limit=200&dealYn=N&interval=24&countryCd=001&langCd=001&siteCd=1&deviceCd=001&device=pc&mandM=halfclub"
+        else:
+            url = "https://apix.boribori.co.kr/searches/best/?dealYn=N&interval=24&siteCd=2&limit=0,200&countryCd=001&langCd=001&deviceCd=001&mandM=b_boribori"
+        
+        resp = http.request("GET", url)
+        if resp.status == 200:
+            data = resp.json()
+            
+            products = []
+            seen_categories = set()
+            
+
+            if "data" in data:
+                result_data = data["data"]
+                if "result" in result_data:
+                    hits_data = result_data["result"]
+                    if "hits" in hits_data and "hits" in hits_data["hits"]:
+                        hits = hits_data["hits"]["hits"]
+                    else:
+                        hits = hits_data.get("hits", [])
+                else:
+                    hits = result_data if isinstance(result_data, list) else []
+            else:
+                hits = data if isinstance(data, list) else []
+            
+
+            
+            for i, hit in enumerate(hits):
+                if isinstance(hit, dict) and len(products) < 12:
+                    source = hit.get("_source", hit)
+                    prd_no = source.get("prdNo")
+                    prd_nm = source.get("prdNm", f"상품{i+1}")
+                    prd_img = source.get("appPrdImgUrl", "")
+                    
+
+                    dp_ctgr_nm1 = source.get("dpCtgrNm1", "")
+                    
+
+                    if dp_ctgr_nm1 and "@" in dp_ctgr_nm1:
+                        dp_ctgr_nm1 = dp_ctgr_nm1.split("@")[0].strip()
+                    
+                    if not dp_ctgr_nm1:
+                        continue
+                    
+
+                    display_name = dp_ctgr_nm1
+                    
+
+                    if prd_no and dp_ctgr_nm1 not in seen_categories:
+                        seen_categories.add(dp_ctgr_nm1)
+
+                        if len(display_name) > 6:
+                            formatted_name = display_name[:5] + "…"
+                        else:
+                            formatted_name = display_name.ljust(6, '　')
+                        
+                        products.append({
+                            "prd_nm": formatted_name,
+                            "prd_no": prd_no,
+                            "prd_img": prd_img or f"https://via.placeholder.com/200x250/CCCCCC/000000?text={prd_no}",
+                            "full_name": display_name
+                        })
+            
+
+            if products:
+                return products
+                
+    except Exception as e:
+        st.error(f"베스트 상품 로드 오류: {e}")
     
-    {"prd_nm": "정장", "prd_no": 382975810, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A3987/P382975810/1_P382975810_basic_1736917892338.jpg?format=webp"},
-    {"prd_nm": "셔츠", "prd_no": 380125465, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA003626/P353033327/1_P353033327_basic_1736536730865.jpg?format=webp"},
-    {"prd_nm": "자켓", "prd_no": 388857787, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA000319/P388857787/1_P388857787_basic_1748306210368.jpg?format=webp"},
-    {"prd_nm": "골프", "prd_no": 360321880, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/A1939/P360321880/1_P360321880_basic_1712804679955.jpg?format=webp"},
-    {"prd_nm": "스포츠", "prd_no": 360099075, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004454/P360099075/1_P360099075_basic_1750144433688.jpg?format=webp"},
-    {"prd_nm": "아웃도어", "prd_no": 392879248, "prd_img": "https://cdn2.halfclub.com/rimg/500x667/contain/cdn/product/SA004416/P392879248/1_P392879248_basic_1749776418523.jpg?format=webp"},
+
+    return [
+        {"prd_nm": "여성의류", "prd_no": 380118214, "prd_img": "https://via.placeholder.com/200x250/FFB6C1/000000?text=여성의류"},
+        {"prd_nm": "남성의류", "prd_no": 402544118, "prd_img": "https://via.placeholder.com/200x250/DDA0DD/000000?text=남성의류"},
+        {"prd_nm": "신발", "prd_no": 379859455, "prd_img": "https://via.placeholder.com/200x250/F0E68C/000000?text=신발"},
+        {"prd_nm": "가방", "prd_no": 393954850, "prd_img": "https://via.placeholder.com/200x250/87CEEB/000000?text=가방"},
+        {"prd_nm": "스포츠", "prd_no": 391016367, "prd_img": "https://via.placeholder.com/200x250/98FB98/000000?text=스포츠"},
+        {"prd_nm": "액세서리", "prd_no": 380115991, "prd_img": "https://via.placeholder.com/200x250/F4A460/000000?text=액세서리"}
+    ]
+
+
+if f"best_products_{site_cd}" not in st.session_state:
+    st.session_state[f"best_products_{site_cd}"] = get_best_products(site_cd)
+
+view_options = st.session_state[f"best_products_{site_cd}"] or [
+    {"prd_nm": "여성의류", "prd_no": 380118214, "prd_img": "https://via.placeholder.com/200x250/FFB6C1/000000?text=여성의류"},
+    {"prd_nm": "남성의류", "prd_no": 402544118, "prd_img": "https://via.placeholder.com/200x250/DDA0DD/000000?text=남성의류"},
+    {"prd_nm": "신발", "prd_no": 379859455, "prd_img": "https://via.placeholder.com/200x250/F0E68C/000000?text=신발"},
+    {"prd_nm": "가방", "prd_no": 393954850, "prd_img": "https://via.placeholder.com/200x250/87CEEB/000000?text=가방"},
+    {"prd_nm": "스포츠", "prd_no": 391016367, "prd_img": "https://via.placeholder.com/200x250/98FB98/000000?text=스포츠"},
+    {"prd_nm": "액세서리", "prd_no": 380115991, "prd_img": "https://via.placeholder.com/200x250/F4A460/000000?text=액세서리"}
 ]
 search_options = [
     {"prd_nm": "티셔츠", "prd_no": 0, "prd_img": ""},
@@ -81,13 +194,6 @@ recommend_type = ""
 recommend_type_nm = ""
 
 service_type = "추천"
-# service_type = st.selectbox("서비스 구분", options=["추천", "검색"])
-# if service_type == "검색":
-#     recommend_sample = search_options
-#     gender_params = search_gender_options
-#     select_type = "검색 개인화"
-#     recommend_type = "keyword-search"
-#     recommend_type_nm = "검색 개인화"
 
 if "gender" not in st.session_state:
     st.session_state.gender = ""
@@ -162,17 +268,10 @@ def show_grid(items, columns_per_row=5, title=None, img_width=220):
         for row in rows:
             cols = st.columns(len(row), gap="small")
             for col, rec in zip(cols, row):
-                # prd_no = rec.get("prd_no")
-                # url = rec.get("prd_url")
-                # score = rec.get("score")
                 img_url = rec.get("prd_img")
                 prd_nm = rec.get("prd_nm")
                 with col:
                     if img_url:
-                        # if score<0.5:
-                        #     st.markdown(f"<p style='font-size:11pt;margin:0;padding:0;'>상품: <a href='{url}'>{prd_no}</a><br/>추천 스코어: {score:.3f}</p>", unsafe_allow_html=True)
-                        # else:
-                        #     st.markdown(f"<p style='font-size:11pt;margin:0;padding:0;'>상품: <a href='{url}'>{prd_no}</a></p>", unsafe_allow_html=True)
                         st.image(img_url, width=img_width)
                         st.markdown(prd_nm, unsafe_allow_html=True)
                     else:
@@ -186,6 +285,24 @@ def show_grid(items, columns_per_row=5, title=None, img_width=220):
 # 추천 대상 이미지 버튼 CSS 설정
 st.markdown("""
     <style>
+    .stButton > button {
+        width: 100% !important;
+        height: 60px !important;
+        font-family: 'Courier New', monospace !important;
+        font-size: 13px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        padding: 0 5px !important;
+        border: 2px solid transparent !important;
+        border-radius: 8px !important;
+    }
+    .stButton > button:hover {
+        border-color: #aaa !important;
+    }
+
     .full-btn > button {
         width: 100% !important;
         height: auto !important;
@@ -214,10 +331,12 @@ st.markdown("""
     }
     .btn-text {
         font-weight: bold;
-        font-size: 16px;
+        font-size: 14px;
         padding: 8px;
         text-align: center;
         width: 100%;
+        font-family: monospace;
+        letter-spacing: -0.5px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -237,38 +356,40 @@ for i, value in enumerate(recommend_sample):
     prd_no = value.get("prd_no", "")
     
     selected_class = ""
+    if str(prd_no) in st.session_state.prd_no_list:
+        selected_class = "selected-button"
+    
     with cols[i % col_count]:
-        btn = st.container()
-        with btn:
+        with st.container():
             if st.button(
                 label=prd_nm,
                 key=f"btn_{prd_no}",
-                # help=prd_nm,
                 use_container_width=True
             ):
                 # 선택 표시
                 selected_class = "selected-btn"
                 
-                # 선택 상품/키워드
-                select_prd_no = str(prd_no)
-                st.session_state.prd_no = str(prd_no)
-                select_prd_nm = str(prd_nm)
-                st.session_state.prd_nm = str(prd_nm)
-    
                 if st.session_state.type in ["recommendforyou"]:
                     if str(prd_no) not in st.session_state.prd_no_list:
                         st.session_state.prd_no_list.add(str(prd_no))
                     else:
                         st.session_state.prd_no_list.remove(str(prd_no))
-                        selected_class = ""
+                    # 개인화 추천용 다중 상품 URL 업데이트
+                    st.query_params["prdNo"] = ",".join(st.session_state.prd_no_list)
                 else:
+                    select_prd_no = str(prd_no)
+                    st.session_state.prd_no = str(prd_no)
+                    full_name = value.get("full_name", prd_nm)
+                    select_prd_nm = str(full_name)
+                    st.session_state.prd_nm = str(full_name)
                     st.session_state.prd_no_list = set()
                     st.session_state.prd_no_list.add(str(prd_no))
+                    # 단일 상품 URL 업데이트
+                    st.query_params["prdNo"] = str(prd_no)
             if prd_img:
                 if (
                     st.session_state.prd_no_list
-                    and len(st.session_state.prd_no_list) > 1
-                    and prd_no in st.session_state.prd_no_list
+                    and str(prd_no) in st.session_state.prd_no_list
                 ):
                     selected_class = "selected-btn"
                 st.markdown(
@@ -286,14 +407,7 @@ for i, value in enumerate(recommend_sample):
 st.markdown("---")
 
 
-# if service_type == "검색":
-#     if gender:
-#         st.subheader(f"검색 키워드: {select_prd_nm} ({gender})")
-#     else:
-#         st.subheader(f"검색 키워드: {select_prd_nm}")
-#     # 가로선
-#     st.markdown("---")
-# else:
+
 def show_target_list():
     if service_type != "검색":
         st.session_state.show_type = st.session_state.type
@@ -307,10 +421,8 @@ def show_target_list():
                 ori_prd_list = []
                 st.session_state.show_prd = prd_no_list
                 for resp_prd_no in prd_no_list:
-                    ori_img_resp = http.request(
-                        "GET",
-                        f"http://hapix.halfclub.com/searches/prdList/?keyword={resp_prd_no}&siteCd=1&device=mc",
-                    )
+                    search_url = f"http://hapix.halfclub.com/searches/prdList/?keyword={resp_prd_no}&siteCd={site_cd}&device=mc" if site_cd == 1 else f"http://apix.boribori.co.kr/searches/prdList/?keyword={resp_prd_no}&siteCd={site_cd}&device=mc"
+                    ori_img_resp = http.request("GET", search_url)
                     if ori_img_resp.status == 200:
                         try:
                             j = ori_img_resp.json()
@@ -325,6 +437,18 @@ def show_target_list():
                             text = ""
                             if len(prd_no_list) > 1:
                                 text = text + "<p style='font-size:10pt;margin:0;padding:0;'>"
+
+                            dp_ctgr_nm1 = resp_data.get("dpCtgrNm1", "")
+                            dp_ctgr_nm2 = resp_data.get("dpCtgrNm2", "")
+                            dp_ctgr_nm3 = resp_data.get("dpCtgrNm3", "")
+                            
+
+                            category_path = []
+                            if dp_ctgr_nm1: category_path.append(dp_ctgr_nm1)
+                            if dp_ctgr_nm2: category_path.append(dp_ctgr_nm2)
+                            if dp_ctgr_nm3: category_path.append(dp_ctgr_nm3)
+                            category_str = " > ".join(category_path) if category_path else ""
+                            
                             text = text + f"브랜드 : {brandNm}<br/>"
                             text = text + f"상 품 : <a href='https://www.halfclub.com/product/{prdNo}'>{prdNo}</a><br/>"
                             text = text + f"가 격 : {dcPrc:,}<br/>"
@@ -332,6 +456,8 @@ def show_target_list():
                                 text = text + f"상품명 :<br/>{prdNm}<br/>"
                             else:
                                 text = text + f"상품명 : {prdNm}<br/>"
+                            if category_str:
+                                text = text + f"{category_str}"
                                 
                             if age or gender:
                                 text = text + f"<br/>"
@@ -365,25 +491,47 @@ show_target_list()
 
 
 if service_type == "추천":
-    select_type = st.selectbox("추천 서비스 유형",
-        options=[
-            list(ml_types[0].keys())[0],
-            # list(ml_types[1].keys())[0],
-            list(ml_types[2].keys())[0],
-            # list(ml_types[3].keys())[0],
-            list(ml_types[4].keys())[0],
-            list(ml_types[5].keys())[0],
-            list(ml_types[6].keys())[0],
-            # list(ml_types[7].keys())[0]
-        ]
-    )
+    type_options = [
+        list(ml_types[0].keys())[0],
+        list(ml_types[2].keys())[0],
+        list(ml_types[4].keys())[0],
+        list(ml_types[5].keys())[0],
+        list(ml_types[6].keys())[0]
+    ]
+    
+    # URL 파라미터로 추천 서비스 유형 설정
+    default_index = 0
+    if url_type:
+        for i, option in enumerate(type_options):
+            for item in ml_types:
+                if list(item.values())[0] == url_type and list(item.keys())[0] == option:
+                    default_index = i
+                    break
+    
+    select_type = st.selectbox("추천 서비스 유형", options=type_options, index=default_index)
     for item in ml_types:
         if list(item.keys())[0] == select_type:
             recommend_type = list(item.values())[0]
             st.session_state.type = recommend_type
             recommend_type_nm = list(item.keys())[0]
             st.session_state.type_nm = recommend_type_nm
+            # 추천 서비스 유형 선택 시 URL 업데이트
+            if recommend_type != url_type:
+                st.query_params["mlType"] = recommend_type
             break
+    
+    # URL 파라미터로 상품 설정
+    if url_prd and not st.session_state.prd_no_list:
+        # prdNo 파라미터 처리
+        if recommend_type == "recommendforyou":
+            if "," in url_prd:
+                for prd in url_prd.split(","):
+                    st.session_state.prd_no_list.add(prd.strip())
+            else:
+                st.session_state.prd_no_list.add(url_prd.strip())
+        else:
+            st.session_state.prd_no = url_prd
+            st.session_state.prd_no_list.add(url_prd)
 
 # 직접입력 체크박스
 input_yn = st.checkbox("직접입력", value=False, key="direct_input")
@@ -419,7 +567,7 @@ elif recommend_type in ["buytogether", "viewtogether"]:
             st.session_state.age = age
             st.session_state.gender = gender
 
-if recommend_type not in ["recommendforyou"]:
+if st.session_state.type not in ["recommendforyou"]:
     st.session_state.prd_no_list = set()
     
 if user_yn == False:
@@ -463,15 +611,16 @@ def submit():
                 elif recommend_type in ["buytogether"]:
                     recommend_type = "buyuser"
                 params = dict(
-                    prd_no=int(select_prd_no),
+                    prdNo=int(select_prd_no),
                     age=selected_age,
                     gender=selected_gender,
-                    # self_yn=bool(self_yn),
+                    siteCd=site_cd,
                     size=int(k)
                 )
             else:
                 params = dict(
-                    prd_no=int(select_prd_no),
+                    prdNo=int(select_prd_no),
+                    siteCd=site_cd,
                     size=int(k)
                 )
         elif recommend_type in ["keyword-search"]:
@@ -487,21 +636,32 @@ def submit():
             params = dict(
                 keyword=select_prd_nm,
                 gender=selected_gender,
+                siteCd=site_cd,
                 limit=int(k)
             )
         elif recommend_type in ["recommendforyou"]:
             params = dict(
-                prd_no_list=list(st.session_state.prd_no_list),
+                prdNo=list(st.session_state.prd_no_list),
+                siteCd=site_cd,
                 size=int(k)
             )
         else:
             params = dict(
-                prd_no=int(select_prd_no),
+                prdNo=int(select_prd_no),
+                siteCd=site_cd,
                 size=int(k)
             )
-        response = requests.get(f"{API_URL}/{recommend_type}", params=params)
+        api_url = f"{API_URL}/{recommend_type}"
+        response = requests.get(api_url, params=params, timeout=30)
         response.raise_for_status()
         data = response.json()
+        
+        # 실제 호출된 URL 저장
+        st.session_state.last_api_url = response.url
+        
+        if not data:
+            st.error("API 응답이 비어있습니다.")
+            return
         
         # 추천 대상 상품 표시
         if recommend_type in ["keyword-search"]:
@@ -509,70 +669,8 @@ def submit():
                 st.subheader(f"검색 키워드: {select_prd_nm} ({gender})")
             else:
                 st.subheader(f"검색 키워드: {select_prd_nm}")
-            # 가로선
             st.markdown("---")
-        # else:
-        #     show_target_list()
-        # else:
-        #     prd_no_list = []
-        #     if "prd_no_list" in data:
-        #         prd_no_list = data.get("prd_no_list", [])
-        #     elif "prd_no" in data:
-        #         prd_no_list.append(data.get("prd_no"))
-        #     if not prd_no_list:
-        #         st.error("결과 없음")
-        #     else:
-        #         ori_prd_list = []
-        #         for resp_prd_no in prd_no_list:
-        #             ori_img_resp = http.request(
-        #                 "GET",
-        #                 f"http://hapix.halfclub.com/searches/prdList/?keyword={resp_prd_no}&siteCd=1&device=mc",
-        #             )
-        #             if ori_img_resp.status == 200:
-        #                 try:
-        #                     j = ori_img_resp.json()
-        #                     resp_data = j["data"]["result"]["hits"]["hits"][0]["_source"]
-        #                     prdNo = resp_data.get("prdNo", "")
-        #                     prdNm = resp_data.get("prdNm", "")
-        #                     dcPrc = resp_data.get("dcPrcMc", 0)
-        #                     imgUrl = resp_data.get("appPrdImgUrl", "")
-        #                     brandNm = resp_data.get("brandNm", "")
-        #                     prdUrl = f"https://www.halfclub.com/product/{prdNo}"
-                            
-        #                     text = ""
-        #                     if len(prd_no_list) > 1:
-        #                         text = text + "<p style='font-size:10pt;margin:0;padding:0;'>"
-        #                     text = text + f"브랜드 : {brandNm}<br/>"
-        #                     text = text + f"상 품 : <a href='https://www.halfclub.com/product/{prdNo}'>{prdNo}</a><br/>"
-        #                     text = text + f"가 격 : {dcPrc:,}<br/>"
-        #                     if len(prd_no_list) > 1:
-        #                         text = text + f"상품명 :<br/>{prdNm}<br/>"
-        #                     else:
-        #                         text = text + f"상품명 : {prdNm}<br/>"
-                                
-        #                     if age or gender:
-        #                         text = text + f"<br/>"
-        #                         if age:
-        #                             text = text + f" ■ 선택 나이 : {age}<br/>"
-        #                         if gender:
-        #                             text = text + f" ■ 선택 성별 : {gender}<br/>"
-        #                     if len(prd_no_list) > 1:
-        #                         text = text + f"</p><br/>"
-                            
-        #                     ori_prd_list.append({
-        #                         "prd_no": prdNo
-        #                         , "score": 0
-        #                         , "prd_nm": text
-        #                         , "prd_url": prdUrl
-        #                         , "prd_img": imgUrl
-        #                     })
-        #                 except Exception as ex:
-        #                     continue
-        #         if ori_prd_list:
-        #             if len(ori_prd_list) == 1:
-        #                 show_target(ori_prd_list, columns_per_row=1, title="추천 대상 상품")
-        #             else:
-        #                 show_grid(ori_prd_list, columns_per_row=5, title="추천 대상 상품", img_width=130)
+
                 
         # 추천 상품 이미지 및 점수
         recs = []
@@ -581,10 +679,20 @@ def submit():
                 
         ml_data = []
         if recommend_type in ["keyword-search"]:
-            ml_data = data
+            if isinstance(data, list):
+                ml_data = data
+            elif isinstance(data, dict):
+                ml_data = data.get("results", data.get("data", []))
+            else:
+                ml_data = []
         else:
-            ml_data = data.get("result", [])
-            ml_type = data.get("ml_type", [])
+            if isinstance(data, dict):
+                ml_data = data.get("result", data.get("data", []))
+            elif isinstance(data, list):
+                ml_data = data
+            else:
+                ml_data = []
+            ml_type = data.get("ml_type", "") if isinstance(data, dict) else ""
             if ml_type:
                 if ml_type == "ml":
                     recs_title = recs_title + f": {recommend_type_nm} ML"
@@ -593,21 +701,24 @@ def submit():
             else:
                 recs_title = recs_title + f": {recommend_type_nm}"
                             
+        if not ml_data:
+            st.warning("추천 결과가 없습니다.")
+            return
+            
         for rec in ml_data:
-            if recommend_type in ["keyword-search"]:
-                prd_no = rec.get("prd_no")
-                score = rec.get("score", 0.0)
-                prd_nm = rec.get("prd_nm")
-                prd_img = rec.get("prd_img")
-                prc = rec.get("price")
-                brandNm = rec.get("brandNm", "")
-            else:
-                prd_no = rec.get("prdNo")
-                score = rec.get("score", 0.0)
-                prd_nm = rec.get("prdNm")
-                prd_img = rec.get("appPrdImgUrl")
-                prc = rec.get("dcPrcMc")
-                brandNm = rec.get("brandNm", "")
+            if not rec or not isinstance(rec, dict):
+                continue
+                
+            # 필드명 호환성 처리
+            prd_no = rec.get("prd_no") or rec.get("prdNo")
+            if not prd_no:
+                continue
+                
+            score = rec.get("score", 0.0)
+            prd_nm = rec.get("prd_nm") or rec.get("prdNm", "")
+            prd_img = rec.get("prd_img") or rec.get("appPrdImgUrl", "")
+            prc = rec.get("price") or rec.get("dcPrcMc", 0)
+            brandNm = rec.get("brandNm", "")
                 
                         
             text = ""
@@ -632,6 +743,18 @@ def submit():
                         text = text + f"</p>"
                         break
             
+            # 카테고리 정보 추가 (추천 결과용)
+            dp_ctgr_nm1 = rec.get("dpCtgrNm1", "")
+            dp_ctgr_nm2 = rec.get("dpCtgrNm2", "")
+            dp_ctgr_nm3 = rec.get("dpCtgrNm3", "")
+            
+            # 카테고리 경로 생성
+            category_path = []
+            if dp_ctgr_nm1: category_path.append(dp_ctgr_nm1)
+            if dp_ctgr_nm2: category_path.append(dp_ctgr_nm2)
+            if dp_ctgr_nm3: category_path.append(dp_ctgr_nm3)
+            category_str = " > ".join(category_path) if category_path else ""
+            
             # 상품 정보 표시
             text = text + f"<p style='font-size:10pt;margin:0;padding:0;'>"
             if score:
@@ -640,6 +763,8 @@ def submit():
             text = text + f"상 품 : <a href='https://www.halfclub.com/product/{prd_no}'>{prd_no}</a><br/>"
             text = text + f"가 격 : {prc:,} 원<br/>"
             text = text + f"상품명 :<br/>{prd_nm}<br/>"
+            if category_str:
+                text = text + f"{category_str}"
             text = text + f"</p><br/>"
             
             recs.append({"prd_no": prd_no, "score": score, "prd_nm": text, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": prd_img})
@@ -649,10 +774,16 @@ def submit():
         else:
             show_grid(recs, columns_per_row=4, title=recs_title)
 
+    except requests.exceptions.Timeout:
+        st.error("API 요청 시간이 초과되었습니다.")
+    except requests.exceptions.ConnectionError:
+        st.error("API 서버에 연결할 수 없습니다.")
     except requests.exceptions.HTTPError as http_err:
-        st.error(f"HTTP 에러: {http_err}")
+        st.error(f"HTTP 에러 ({http_err.response.status_code}): {http_err}")
+    except ValueError as json_err:
+        st.error(f"API 응답 파싱 오류: {json_err}")
     except Exception as err:
-        st.error(f"오류 발생: {err}")
+        st.error(f"예상치 못한 오류: {err}")
 
 # 폼 제출 시 API 호출 및 이미지 표시
 if submit_button:
@@ -675,7 +806,7 @@ if submit_button:
                 st.rerun()
     
     st.rerun()
-    # submit()
+
 elif submit:
     if recommend_type in ["keyword-search"]:
         if gender:
@@ -689,4 +820,10 @@ elif submit:
         st.rerun()
 
     submit()
+
+# 맨 하단에 실제 호출된 URL 표시
+if 'last_api_url' in st.session_state:
+    st.markdown("---")
+    st.markdown("**호출된 API URL:**")
+    st.code(st.session_state.last_api_url, language="text")
 
