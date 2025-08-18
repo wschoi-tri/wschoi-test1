@@ -4,7 +4,80 @@ import urllib3
 
 http = urllib3.PoolManager()
 
-st.header("추천 서비스 (ML)")
+# 페이지 설정
+st.set_page_config(
+    page_title="AI 상품 추천 서비스",
+    page_icon="🛍️",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
+# 커스텀 CSS
+st.markdown("""
+<style>
+    .main-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .main-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white !important;
+    }
+    .main-header p {
+        margin: 0.5rem 0 0 0;
+        font-size: 1.1rem;
+        opacity: 0.9;
+        color: white !important;
+    }
+    .section-card {
+        background: rgba(255, 255, 255, 0.05);
+        color: inherit;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #3498db;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+    .section-card h3 {
+        color: #3498db !important;
+        margin-top: 0;
+    }
+    .section-card p {
+        color: inherit !important;
+        opacity: 0.8;
+    }
+    .stButton > button {
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+        color: white !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 27px !important;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# 메인 헤더
+st.markdown("""
+<div class="main-header">
+    <h1>🛍️ AI 상품 추천 서비스</h1>
+    <p>머신러닝 기반 개인화 상품 추천 시스템</p>
+</div>
+""", unsafe_allow_html=True)
 
 # URL 파라미터 처리
 query_params = st.query_params
@@ -16,7 +89,30 @@ url_prd = query_params.get("prdNo", "")
 if "siteCd" not in query_params:
     st.query_params["siteCd"] = "1"
 
-site_cd = st.selectbox("사이트 선택", options=[1, 2], format_func=lambda x: "하프클럽" if x == 1 else "보리보리", index=int(url_site)-1 if url_site in ["1", "2"] else 0)
+
+
+col1, col2 = st.columns([3, 1])
+with col1:
+    site_cd = st.selectbox("사이트 선택", options=[1, 2], format_func=lambda x: "🛍️ 하프클럽" if x == 1 else "🌾 보리보리", index=int(url_site)-1 if url_site in ["1", "2"] else 0)
+with col2:
+    if st.button("🔄 초기화", type="secondary", use_container_width=True):
+        # 세션 상태 초기화
+        st.session_state.prd_no_list = set()
+        st.session_state.prd_no = ""
+        st.session_state.prd_nm = ""
+        st.session_state.gender = ""
+        st.session_state.age = ""
+        st.session_state.type = ""
+        st.session_state.type_nm = ""
+        st.session_state.show_type = ""
+        st.session_state.show_prd = []
+        if 'last_api_url' in st.session_state:
+            del st.session_state.last_api_url
+        if 'last_api_response' in st.session_state:
+            del st.session_state.last_api_response
+        # 모든 URL 파라미터 초기화
+        st.query_params.clear()
+        st.rerun()
 
 # 사이트 선택 시 URL 업데이트 및 상품 선택 초기화
 if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
@@ -35,24 +131,7 @@ if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
         del st.query_params["prdNo"]
     st.rerun()
 
-# 초기화 버튼
-if st.button("🔄 초기화", type="secondary"):
-    # 세션 상태 초기화
-    st.session_state.prd_no_list = set()
-    st.session_state.prd_no = ""
-    st.session_state.prd_nm = ""
-    st.session_state.gender = ""
-    st.session_state.age = ""
-    st.session_state.type = ""
-    st.session_state.type_nm = ""
-    st.session_state.show_type = ""
-    st.session_state.show_prd = []
-    if 'last_api_url' in st.session_state:
-        del st.session_state.last_api_url
-    # URL 파라미터 초기화 (사이트 코드만 유지)
-    st.query_params.clear()
-    st.query_params["siteCd"] = str(site_cd)
-    st.rerun()
+
 
 API_URL = "https://cf-hapi.halfclub.com/recommend"
 self_yn = False
@@ -301,7 +380,7 @@ st.markdown("""
     <style>
     .stButton > button {
         width: 100% !important;
-        height: 60px !important;
+        height: 40px !important;
         font-family: 'Courier New', monospace !important;
         font-size: 13px !important;
         font-weight: bold !important;
@@ -356,12 +435,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+
+
 col_count = 6
 if service_type == "검색":
-    st.markdown("검색 키워드 선택")
     col_count = 4
-else:
-    st.markdown("추천 상품 선택")
     
 # 이미지 버튼 표시
 cols = st.columns(col_count)
@@ -508,6 +586,8 @@ show_target_list()
 
 
 if service_type == "추천":
+
+    
     type_options = [
         list(ml_types[0].keys())[0],
         list(ml_types[2].keys())[0],
@@ -555,8 +635,7 @@ if service_type == "추천":
                 st.session_state.prd_no = first_prd
                 st.session_state.prd_no_list.add(first_prd)
 
-# 직접입력 체크박스
-input_yn = st.checkbox("직접입력", value=False, key="direct_input")
+input_yn = st.checkbox("📝 상품번호 직접 입력", value=False, key="direct_input")
 
 submit_button = None
 # 직접 입력 표시
@@ -575,14 +654,14 @@ if input_yn:
         else:
             input_value = st.session_state.prd_no if st.session_state.prd_no else ""
             
-        prd_no = st.text_input(input_text, value=input_value)
-        submit_button = st.form_submit_button(label="조회")
+        prd_no = st.text_input(input_text, value=input_value, placeholder="여기에 입력해주세요...")
+        submit_button = st.form_submit_button(label="🔍 조회 시작", use_container_width=True)
         
-# 성별선택 체크박스
+# 성별 선택 섹션
 if recommend_type in ["keyword-search"]:
-    gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
+    gender = st.selectbox("성별", options=["", "👨 남성", "👩 여성"], index=0)
     if gender:
-        st.session_state.gender = gender
+        st.session_state.gender = gender.replace("👨 ", "").replace("👩 ", "")
 
 if st.session_state.type not in ["recommendforyou"]:
     st.session_state.prd_no_list = set()
@@ -885,13 +964,13 @@ if auto_submit:
 
     submit()
 
-# 맨 하단에 실제 호출된 URL 및 JSON 데이터 표시
+# API 정보 섹션
 if 'last_api_url' in st.session_state:
-    st.markdown("---")
-    with st.expander("🔗 호출된 API URL 보기", expanded=False):
-        st.text(st.session_state.last_api_url)
+        
+    with st.expander("🔗 호출된 API URL", expanded=False):
+        st.markdown(f"[{st.session_state.last_api_url}]({st.session_state.last_api_url})")
     
     if 'last_api_response' in st.session_state:
-        with st.expander("📊 API 응답 JSON 보기", expanded=False):
+        with st.expander("📊 API 응답 JSON", expanded=False):
             st.json(st.session_state.last_api_response)
 
