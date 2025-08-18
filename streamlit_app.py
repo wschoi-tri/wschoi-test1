@@ -75,7 +75,7 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <h1>🛍️ 상품 추천 서비스</h1>
-    <p>머신러닝 기반 개인화 상품 추천 시스템</p>
+    <p>머신러닝 기반 상품 추천 시스템</p>
 </div>
 """, unsafe_allow_html=True)
 
