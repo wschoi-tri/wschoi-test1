@@ -276,8 +276,6 @@ def show_grid(items, columns_per_row=5, title=None, img_width=220):
                         st.markdown(prd_nm, unsafe_allow_html=True)
                     else:
                         continue
-        # 가로선
-        st.markdown("---")
     except Exception as e:
         return
   
@@ -392,12 +390,13 @@ for i, value in enumerate(recommend_sample):
                     and str(prd_no) in st.session_state.prd_no_list
                 ):
                     selected_class = "selected-btn"
+                product_url = f"https://www.halfclub.com/product/{prd_no}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prd_no}"
                 st.markdown(
                     f"""
                     <div class="full-btn {selected_class}">
                         <div class="btn-content">
                             <img src="{prd_img}" />
-                            <a href="https://www.halfclub.com/product/{prd_no}">{prd_no}</a>
+                            <a href="{product_url}">{prd_no}</a>
                         </div>
                     </div>
                     """,
@@ -432,7 +431,7 @@ def show_target_list():
                             dcPrc = resp_data.get("dcPrcMc", 0)
                             imgUrl = resp_data.get("appPrdImgUrl", "")
                             brandNm = resp_data.get("brandNm", "")
-                            prdUrl = f"https://www.halfclub.com/product/{prdNo}"
+                            prdUrl = f"https://www.halfclub.com/product/{prdNo}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prdNo}"
                             
                             text = ""
                             if len(prd_no_list) > 1:
@@ -450,7 +449,8 @@ def show_target_list():
                             category_str = " > ".join(category_path) if category_path else ""
                             
                             text = text + f"브랜드 : {brandNm}<br/>"
-                            text = text + f"상 품 : <a href='https://www.halfclub.com/product/{prdNo}'>{prdNo}</a><br/>"
+                            product_link_url = f"https://www.halfclub.com/product/{prdNo}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prdNo}"
+                            text = text + f"상 품 : <a href='{product_link_url}'>{prdNo}</a><br/>"
                             text = text + f"가 격 : {dcPrc:,}<br/>"
                             if len(prd_no_list) > 1:
                                 text = text + f"상품명 :<br/>{prdNm}<br/>"
@@ -521,17 +521,22 @@ if service_type == "추천":
             break
     
     # URL 파라미터로 상품 설정
-    if url_prd and not st.session_state.prd_no_list:
+    if url_prd:
         # prdNo 파라미터 처리
         if recommend_type == "recommendforyou":
+            # 기존 리스트 초기화 후 URL 파라미터로 설정
+            st.session_state.prd_no_list = set()
             if "," in url_prd:
                 for prd in url_prd.split(","):
                     st.session_state.prd_no_list.add(prd.strip())
             else:
                 st.session_state.prd_no_list.add(url_prd.strip())
         else:
-            st.session_state.prd_no = url_prd
-            st.session_state.prd_no_list.add(url_prd)
+            if not st.session_state.prd_no:
+                # 단일 상품 추천의 경우 첫 번째 상품만 사용
+                first_prd = url_prd.split(",")[0].strip() if "," in url_prd else url_prd
+                st.session_state.prd_no = first_prd
+                st.session_state.prd_no_list.add(first_prd)
 
 # 직접입력 체크박스
 input_yn = st.checkbox("직접입력", value=False, key="direct_input")
@@ -542,10 +547,17 @@ if input_yn:
     with st.form(key="view_form"):
         input_text = "상품번호"
         input_value = ""
+        
+        # 선택된 상품번호를 텍스트 박스에 표시
         if recommend_type in ["keyword-search"]:
             input_text = "검색어"
+            input_value = st.session_state.prd_nm if st.session_state.prd_nm != "직접입력" else ""
         elif recommend_type in ["recommendforyou"]:
             input_text = "상품번호 리스트 (ex. 상품번호1,상품번호2,상품번호3)"
+            input_value = ",".join(st.session_state.prd_no_list) if st.session_state.prd_no_list else ""
+        else:
+            input_value = st.session_state.prd_no if st.session_state.prd_no else ""
+            
         prd_no = st.text_input(input_text, value=input_value)
         submit_button = st.form_submit_button(label="조회")
         
@@ -553,41 +565,29 @@ if input_yn:
 if recommend_type in ["keyword-search"]:
     gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
     if gender:
-        user_yn = True
         st.session_state.gender = gender
-elif recommend_type in ["buytogether", "viewtogether"]:
-    user_yn = st.checkbox("회원 유형 선택", value=False, key="user_chk_input")
-    if user_yn:
-        age = st.selectbox("나이 (40대 미만, 이상)", options=["", "40대 미만", "40대 이상"], index=0)
-        if age:
-            gender = st.selectbox("성별", options=["남성", "여성"], index=0)
-        else:
-            gender = st.selectbox("성별", options=["", "남성", "여성"], index=0)
-        if age:
-            st.session_state.age = age
-            st.session_state.gender = gender
 
 if st.session_state.type not in ["recommendforyou"]:
     st.session_state.prd_no_list = set()
-    
-if user_yn == False:
-    st.session_state.age = ""
-    st.session_state.gender = ""
     
 # 가로선
 st.markdown("---")
 
 # 추천 조회
 def submit():
+    global recommend_type, gender, age
     # 추천 서비스 유형 선택
     if not select_type:
         return
-    # 상품 번호 입력
-    if not select_prd_no and not select_prd_nm:
-        return
+    # 상품 번호 입력 (개인화 추천은 리스트로 확인)
+    if recommend_type == "recommendforyou":
+        if not st.session_state.prd_no_list:
+            return
+    else:
+        if not select_prd_no and not select_prd_nm:
+            return
     
     try:
-        global recommend_type, gender, age
         selected_gender = ""
         selected_age = ""
         if recommend_type in ["viewtogether", "buytogether"]:
@@ -641,23 +641,41 @@ def submit():
             )
         elif recommend_type in ["recommendforyou"]:
             params = dict(
-                prdNo=list(st.session_state.prd_no_list),
+                prdNo=[int(prd) for prd in st.session_state.prd_no_list],
                 siteCd=site_cd,
                 size=int(k)
             )
         else:
-            params = dict(
-                prdNo=int(select_prd_no),
-                siteCd=site_cd,
-                size=int(k)
-            )
+            # similar-image만 size=50, 나머지는 기본값 사용
+            size_param = 50 if recommend_type == "similar-image" else int(k)
+            
+            # similar-image는 단일 상품만, 나머지는 여러 상품 처리
+            if recommend_type == "similar-image":
+                params = dict(
+                    prdNo=int(select_prd_no),
+                    siteCd=site_cd,
+                    size=size_param
+                )
+            else:
+                # 여러 상품번호가 있으면 모두 처리
+                if st.session_state.prd_no_list and len(st.session_state.prd_no_list) > 1:
+                    prd_list = [int(prd) for prd in st.session_state.prd_no_list]
+                else:
+                    prd_list = [int(select_prd_no)]
+                
+                params = dict(
+                    prdNo=prd_list,
+                    siteCd=site_cd,
+                    size=size_param
+                )
         api_url = f"{API_URL}/{recommend_type}"
         response = requests.get(api_url, params=params, timeout=30)
         response.raise_for_status()
         data = response.json()
         
-        # 실제 호출된 URL 저장
+        # 실제 호출된 URL 및 JSON 데이터 저장
         st.session_state.last_api_url = response.url
+        st.session_state.last_api_response = data
         
         if not data:
             st.error("API 응답이 비어있습니다.")
@@ -760,18 +778,25 @@ def submit():
             if score:
                 text = text + f"추천 스코어 : {score:.4f}<br/>"
             text = text + f"브랜드 : {brandNm}<br/>"
-            text = text + f"상 품 : <a href='https://www.halfclub.com/product/{prd_no}'>{prd_no}</a><br/>"
+            product_link_url = f"https://www.halfclub.com/product/{prd_no}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prd_no}"
+            text = text + f"상 품 : <a href='{product_link_url}'>{prd_no}</a><br/>"
             text = text + f"가 격 : {prc:,} 원<br/>"
             text = text + f"상품명 :<br/>{prd_nm}<br/>"
             if category_str:
                 text = text + f"{category_str}"
             text = text + f"</p><br/>"
             
-            recs.append({"prd_no": prd_no, "score": score, "prd_nm": text, "prd_url": "https://www.halfclub.com/product/" + str(prd_no), "prd_img": prd_img})
+            product_url = f"https://www.halfclub.com/product/{prd_no}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prd_no}"
+            recs.append({"prd_no": prd_no, "score": score, "prd_nm": text, "prd_url": product_url, "prd_img": prd_img})
 
         if not recs:
             st.error("리스트 결과 없음")
         else:
+            # 4의 배수로 결과 제한
+            total_count = len(recs)
+            display_count = (total_count // 4) * 4
+            if display_count > 0:
+                recs = recs[:display_count]
             show_grid(recs, columns_per_row=4, title=recs_title)
 
     except requests.exceptions.Timeout:
@@ -801,29 +826,55 @@ if submit_button:
         if prd_no:
             st.session_state.prd_no_list = set()
             for prd in prd_no.split(","):
-                st.session_state.prd_no_list.add(prd)
+                st.session_state.prd_no_list.add(prd.strip())
             if st.session_state.show_prd != st.session_state.prd_no_list:
                 st.rerun()
+    elif recommend_type != "similar-image":
+        # similar-image를 제외한 다른 추천 유형에서 여러 상품 처리
+        if prd_no and "," in prd_no:
+            st.session_state.prd_no_list = set()
+            for prd in prd_no.split(","):
+                st.session_state.prd_no_list.add(prd.strip())
+            st.session_state.prd_no = prd_no.split(",")[0].strip()  # 첫 번째 상품을 대표로
+        else:
+            st.session_state.prd_no = prd_no
     
     st.rerun()
 
-elif submit:
+# URL 파라미터 또는 상품 선택 시 자동 실행
+auto_submit = False
+
+# URL 파라미터로 모든 값이 설정된 경우
+if url_prd and url_type and recommend_type:
+    auto_submit = True
+# 또는 상품이 선택되고 추천 유형이 설정된 경우
+elif (select_prd_no or st.session_state.prd_no_list) and recommend_type:
+    auto_submit = True
+
+if auto_submit:
     if recommend_type in ["keyword-search"]:
         if gender:
             st.session_state.gender = gender
+    
+    # recommendforyou가 아닌 경우에만 prd_no_list 초기화
     if recommend_type not in ["recommendforyou"]:
-        st.session_state.prd_no_list = set()
+        if st.session_state.prd_no_list:
+            st.session_state.prd_no_list = set()
         
     if st.session_state.show_type != recommend_type:
-        if st.session_state.show_type in ["recommendforyou"]:
+        if st.session_state.show_type in ["recommendforyou"] and recommend_type != "recommendforyou":
             st.session_state.prd_no_list = set()
         st.rerun()
 
     submit()
 
-# 맨 하단에 실제 호출된 URL 표시
+# 맨 하단에 실제 호출된 URL 및 JSON 데이터 표시
 if 'last_api_url' in st.session_state:
     st.markdown("---")
-    st.markdown("**호출된 API URL:**")
-    st.code(st.session_state.last_api_url, language="text")
+    with st.expander("🔗 호출된 API URL 보기", expanded=False):
+        st.text(st.session_state.last_api_url)
+    
+    if 'last_api_response' in st.session_state:
+        with st.expander("📊 API 응답 JSON 보기", expanded=False):
+            st.json(st.session_state.last_api_response)
 
