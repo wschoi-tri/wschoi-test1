@@ -18,9 +18,22 @@ if "siteCd" not in query_params:
 
 site_cd = st.selectbox("사이트 선택", options=[1, 2], format_func=lambda x: "하프클럽" if x == 1 else "보리보리", index=int(url_site)-1 if url_site in ["1", "2"] else 0)
 
-# 사이트 선택 시 URL 업데이트
+# 사이트 선택 시 URL 업데이트 및 상품 선택 초기화
 if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
     st.query_params["siteCd"] = str(site_cd)
+    # 선택된 상품 초기화
+    st.session_state.prd_no_list = set()
+    st.session_state.prd_no = ""
+    st.session_state.prd_nm = ""
+    st.session_state.show_prd = []
+    if 'last_api_url' in st.session_state:
+        del st.session_state.last_api_url
+    if 'last_api_response' in st.session_state:
+        del st.session_state.last_api_response
+    # URL에서 prdNo 파라미터 제거
+    if "prdNo" in st.query_params:
+        del st.query_params["prdNo"]
+    st.rerun()
 
 # 초기화 버튼
 if st.button("🔄 초기화", type="secondary"):
