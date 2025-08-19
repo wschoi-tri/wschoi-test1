@@ -743,7 +743,7 @@ def submit():
             )
         else:
             # similar-image만 size=50, 나머지는 기본값 사용
-            size_param = 50 if recommend_type == "similar-image" else int(k)
+            size_param = 100 if recommend_type == "similar-image" else int(k)
             
             # similar-image는 단일 상품만, 나머지는 여러 상품 처리
             if recommend_type == "similar-image":
