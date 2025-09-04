@@ -133,7 +133,8 @@ if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
 
 
 
-API_URL = "https://cf-hapi.halfclub.com/recommend"
+# API_URL = "http://10.110.101.107:8080/recommend"
+API_URL = "https://cf-api.boribori.co.kr/recommend"
 self_yn = False
 k = 100
 select_prd_no = ""
@@ -711,13 +712,15 @@ def submit():
                     age=selected_age,
                     gender=selected_gender,
                     siteCd=site_cd,
-                    size=int(k)
+                    size=int(k),
+                    score=True
                 )
             else:
                 params = dict(
                     prdNo=int(select_prd_no),
                     siteCd=site_cd,
-                    size=int(k)
+                    size=int(k),
+                    score=True
                 )
         elif recommend_type in ["keyword-search"]:
             if st.session_state.gender:
@@ -733,13 +736,15 @@ def submit():
                 keyword=select_prd_nm,
                 gender=selected_gender,
                 siteCd=site_cd,
-                limit=int(k)
+                limit=int(k),
+                score=True
             )
         elif recommend_type in ["recommendforyou"]:
             params = dict(
                 prdNo=[int(prd) for prd in st.session_state.prd_no_list],
                 siteCd=site_cd,
-                size=int(k)
+                size=int(k),
+                score=True
             )
         else:
             # similar-image만 size=50, 나머지는 기본값 사용
@@ -762,7 +767,8 @@ def submit():
                 params = dict(
                     prdNo=prd_list,
                     siteCd=site_cd,
-                    size=size_param
+                    size=size_param,
+                    score=True
                 )
         api_url = f"{API_URL}/{recommend_type}"
         response = requests.get(api_url, params=params, timeout=30)
@@ -829,6 +835,8 @@ def submit():
                 continue
                 
             score = rec.get("score", 0.0)
+            esscore = rec.get("esscore", 0.0)
+            sgn = rec.get("sgnCd", [])
             prd_nm = rec.get("prd_nm") or rec.get("prdNm", "")
             prd_img = rec.get("prd_img") or rec.get("appPrdImgUrl", "")
             prc = rec.get("price") or rec.get("dcPrcMc", 0)
@@ -873,6 +881,8 @@ def submit():
             text = text + f"<p style='font-size:10pt;margin:0;padding:0;'>"
             if score:
                 text = text + f"추천 스코어 : {score:.4f}<br/>"
+            if esscore:
+                text = text + f"ES 스코어 : {esscore:.4f}<br/>"
             text = text + f"브랜드 : {brandNm}<br/>"
             product_link_url = f"https://www.halfclub.com/product/{prd_no}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prd_no}"
             text = text + f"상 품 : <a href='{product_link_url}'>{prd_no}</a><br/>"
@@ -880,6 +890,20 @@ def submit():
             text = text + f"상품명 :<br/>{prd_nm}<br/>"
             if category_str:
                 text = text + f"{category_str}"
+            if sgn and isinstance(sgn, list) and len(sgn) > 0:
+                for i, code in enumerate(sgn):
+                    if code == "01":
+                        sgn[i] = "봄"
+                    elif code == "02":
+                        sgn[i] = "여름"
+                    elif code == "03":
+                        sgn[i] = "가을"
+                    elif code == "04":
+                        sgn[i] = "겨울"
+                    elif code == "05":
+                        sgn[i] = "사계절"
+                sgn_str = ", ".join(sgn)
+                text = text + f"<br/>시즌 : {sgn_str}<br/>"
             text = text + f"</p><br/>"
             
             product_url = f"https://www.halfclub.com/product/{prd_no}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prd_no}"
