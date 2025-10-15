@@ -133,16 +133,20 @@ if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
 
 
 
-# API_URL = "http://10.110.101.107:8080/recommend"
-API_URL = "https://cf-api.boribori.co.kr/recommend"
+# API_URL = "https://cf-api.boribori.co.kr/recommend"
+API_URL = "https://cf-hapi.halfclub.com/recommend"
 self_yn = False
-k = 30
+k = 100
 select_prd_no = ""
 select_prd_nm = ""
 recomm_typ = ""
 age = ""
 gender = ""
 
+if site_cd == 1:
+    API_URL = "https://cf-hapi.halfclub.com/recommend"
+else:
+    API_URL = "https://cf-api.boribori.co.kr/recommend"
 
 ml_types = [
     {"함께 본 상품 (view-together)": "viewtogether"},
@@ -713,14 +717,14 @@ def submit():
                     gender=selected_gender,
                     siteCd=site_cd,
                     size=int(k),
-                    score=True
+                    # score=True
                 )
             else:
                 params = dict(
                     prdNo=int(select_prd_no),
                     siteCd=site_cd,
                     size=int(k),
-                    score=True
+                    # score=True
                 )
         elif recommend_type in ["keyword-search"]:
             if st.session_state.gender:
@@ -737,14 +741,14 @@ def submit():
                 gender=selected_gender,
                 siteCd=site_cd,
                 limit=int(k),
-                score=True
+                # score=True
             )
         elif recommend_type in ["recommendforyou"]:
             params = dict(
                 prdNo=[int(prd) for prd in st.session_state.prd_no_list],
                 siteCd=site_cd,
                 size=int(k),
-                score=True
+                # score=True
             )
         else:
             # similar-image만 size=50, 나머지는 기본값 사용
@@ -768,7 +772,7 @@ def submit():
                     prdNo=prd_list,
                     siteCd=site_cd,
                     size=size_param,
-                    score=True
+                    # score=True
                 )
         api_url = f"{API_URL}/{recommend_type}"
         response = requests.get(api_url, params=params, timeout=30)
