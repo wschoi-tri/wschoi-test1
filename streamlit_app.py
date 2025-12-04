@@ -774,7 +774,7 @@ def submit():
                     size=size_param,
                     # score=True
                 )
-        api_url = f"{API_URL}/{recommend_type}"
+        api_url = f"{API_URL}/{recommend_type}&randomYn=False"
         response = requests.get(api_url, params=params, timeout=30)
         response.raise_for_status()
         data = response.json()
