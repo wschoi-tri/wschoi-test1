@@ -2,3 +2,16 @@ streamlit
 requests
 urllib3
 pymilvus>=2.3.0
+# --- Deep Learning Core ---
+# PyTorch: 딥러닝 프레임워크 (GPU 사용 시 환경에 따라 별도 설치 필요할 수 있음)
+torch>=2.2.0
+
+# Transformers: BERT 모델 사용 (Hugging Face)
+transformers>=4.41.2
+
+# Accelerate: PyTorch 모델 학습 및 추론 가속화 (Transformers 권장 의존성)
+accelerate>=0.30.1
+
+# --- Data Processing & Machine Learning ---
+# Scikit-learn: PCA 차원 축소용
+scikit-learn>=1.4.0
