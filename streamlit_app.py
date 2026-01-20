@@ -1,6 +1,9 @@
 import streamlit as st
 import requests
 import urllib3
+import torch
+from transformers import AutoTokenizer, AutoModel
+from pymilvus import connections, Collection
 
 http = urllib3.PoolManager()
 
@@ -132,6 +135,41 @@ if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
     st.rerun()
 
 
+# --- BERT & Milvus 설정 ---
+MODEL_NAME = "klue/bert-base"
+MILVUS_URI = "https://in03-4474f3640c68da6.serverless.aws-eu-central-1.cloud.zilliz.com"
+MILVUS_TOKEN = "f3c575b8841a690496169671586ecfa4af4c87b10281cc513ec00b6a30a9e0f7ae193749203701d5918254c17c46128d2d6d60d6"
+
+@st.cache_resource
+def load_resources(collection_alias):
+    """모델 로드 및 Milvus 연결 (캐싱)"""
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    # model = AutoModel.from_pretrained(MODEL_NAME)
+    # model.to(device)
+    # model.eval()
+    device = None
+    tokenizer = None
+    model = None
+    connections.connect(uri=MILVUS_URI, token=MILVUS_TOKEN)
+    collection = Collection(collection_alias)
+    collection.load()
+    return tokenizer, model, collection, device
+
+def get_product_detail_info(prd_no, site_cd):
+    """외부 API에서 상품 이미지 및 상세 정보를 가져옵니다."""
+    base_url = "http://hapix.halfclub.com/searches/prdList/" if site_cd == 1 else "http://apix.boribori.co.kr/searches/prdList/"
+    try:
+        params = {"keyword": prd_no, "siteCd": site_cd, "device": "mc"}
+        response = requests.get(base_url, params=params, timeout=0.5)
+        if response.status_code == 200:
+            data = response.json()
+            hits = data.get("data", {}).get("result", {}).get("hits", {}).get("hits", [])
+            if hits:
+                return hits[0].get("_source", {})
+    except Exception:
+        pass
+    return {}
 
 # API_URL = "https://cf-api.boribori.co.kr/recommend"
 API_URL = "https://cf-hapi.halfclub.com/recommend"
@@ -154,6 +192,7 @@ ml_types = [
     {"함께 구매한 상품 (buy-together)": "buytogether"},
     {"함께 구매한 상품 (연령/성별)": "buyuser"},
     {"유사 상품 (similar-item)": "similaritem"},
+    {"유사 상품 (BERT)": "bert_similar"},
     {"유사 이미지 상품 (similar-image)": "similar-image"},
     {"개인화 추천 (recommend-for-you)": "recommendforyou"},
     {"검색 개인화 (keyword-search)": "keyword-search"}
@@ -598,7 +637,8 @@ if service_type == "추천":
         list(ml_types[2].keys())[0],
         list(ml_types[4].keys())[0],
         list(ml_types[5].keys())[0],
-        list(ml_types[6].keys())[0]
+        list(ml_types[6].keys())[0],
+        list(ml_types[7].keys())[0]
     ]
     
     # URL 파라미터로 추천 서비스 유형 설정
@@ -750,6 +790,8 @@ def submit():
                 size=int(k),
                 # score=True
             )
+        elif recommend_type == "bert_similar":
+            pass
         else:
             # similar-image만 size=50, 나머지는 기본값 사용
             size_param = 100 if recommend_type == "similar-image" else int(k)
@@ -775,14 +817,58 @@ def submit():
                     # score=True
                     randomYn=False,
                 )
-        api_url = f"{API_URL}/{recommend_type}"
-        response = requests.get(api_url, params=params, timeout=30)
-        response.raise_for_status()
-        data = response.json()
         
-        # 실제 호출된 URL 및 JSON 데이터 저장
-        st.session_state.last_api_url = response.url
-        st.session_state.last_api_response = data
+        if recommend_type == "bert_similar":
+            with st.spinner("BERT 모델로 유사 상품을 검색 중입니다..."):
+                # 1. 리소스 로드
+                alias = "hf_prd" if site_cd == 1 else "br_prd"
+                tokenizer, model, collection, device = load_resources(alias)
+                
+                # 2. 상품 번호로 벡터 조회
+                target_prd_no = int(select_prd_no)
+                res = collection.query(
+                    expr=f"prd_no == {target_prd_no}",
+                    output_fields=["vector"],
+                    limit=1
+                )
+                
+                if not res:
+                    st.warning(f"Milvus에서 상품 번호 {target_prd_no}에 대한 데이터를 찾을 수 없습니다.")
+                    return
+                
+                query_vector = res[0]["vector"]
+
+                # 3. Milvus 검색
+                search_params = {"metric_type": "COSINE", "params": {"nprobe": 10}}
+                results = collection.search(
+                    data=[query_vector], 
+                    anns_field="vector", 
+                    param=search_params, 
+                    limit=int(k),
+                    output_fields=["vector"]
+                )
+
+                # 4. 결과 매핑
+                data = []
+                for hits in results:
+                    for hit in hits:
+                        detail = get_product_detail_info(hit.id, site_cd)
+                        item = detail.copy()
+                        item["prd_no"] = hit.id
+                        item["score"] = hit.distance
+                        data.append(item)
+                
+                st.session_state.last_api_url = "Local Milvus Query"
+                st.session_state.last_api_response = data
+        else:
+            api_url = f"{API_URL}/{recommend_type}"
+            response = requests.get(api_url, params=params, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            
+            # 실제 호출된 URL 및 JSON 데이터 저장
+            st.session_state.last_api_url = response.url
+            st.session_state.last_api_response = data
         
         if not data:
             st.error("API 응답이 비어있습니다.")
@@ -1002,4 +1088,3 @@ if 'last_api_url' in st.session_state:
     if 'last_api_response' in st.session_state:
         with st.expander("📊 API 응답 JSON", expanded=False):
             st.json(st.session_state.last_api_response)
-
