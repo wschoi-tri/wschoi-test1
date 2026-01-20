@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 import urllib3
+# import torch
+# from transformers import AutoTokenizer, AutoModel
 from pymilvus import connections, Collection
 
 http = urllib3.PoolManager()
@@ -190,11 +192,13 @@ ml_types = [
     {"함께 구매한 상품 (buy-together)": "buytogether"},
     {"함께 구매한 상품 (연령/성별)": "buyuser"},
     {"유사 상품 (similar-item)": "similaritem"},
-    {"유사 상품 (BERT)": "bert_similar"},
     {"유사 이미지 상품 (similar-image)": "similar-image"},
     {"개인화 추천 (recommend-for-you)": "recommendforyou"},
-    {"검색 개인화 (keyword-search)": "keyword-search"}
 ]
+# {"검색 개인화 (keyword-search)": "keyword-search"}
+
+if site_cd == 2:
+    ml_types.append({"유사 상품 (BERT)": "bert_similar"})
 
 def get_best_products(site_cd):
     try:
@@ -630,14 +634,30 @@ show_target_list()
 if service_type == "추천":
 
     
-    type_options = [
-        list(ml_types[0].keys())[0],
-        list(ml_types[2].keys())[0],
-        list(ml_types[4].keys())[0],
-        list(ml_types[5].keys())[0],
-        list(ml_types[6].keys())[0],
-        list(ml_types[7].keys())[0]
-    ]
+    # type_options = [
+    #     list(ml_types[0].keys())[0],
+    #     list(ml_types[2].keys())[0],
+    #     list(ml_types[4].keys())[0],
+    #     list(ml_types[5].keys())[0],
+    #     list(ml_types[6].keys())[0],
+    #     list(ml_types[7].keys())[0]
+    # ]
+    
+    
+    type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)"]
+    
+    if site_cd == 2:
+        type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)","유사 상품 (BERT)"]
+    
+#     ml_types = [
+#     {"함께 본 상품 (view-together)": "viewtogether"},
+#     {"함께 본 상품 (연령/성별)": "viewuser"},
+#     {"함께 구매한 상품 (buy-together)": "buytogether"},
+#     {"함께 구매한 상품 (연령/성별)": "buyuser"},
+#     {"유사 상품 (similar-item)": "similaritem"},
+#     {"유사 이미지 상품 (similar-image)": "similar-image"},
+#     {"개인화 추천 (recommend-for-you)": "recommendforyou"},
+# ]
     
     # URL 파라미터로 추천 서비스 유형 설정
     default_index = 0
