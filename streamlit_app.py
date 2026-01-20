@@ -135,6 +135,8 @@ if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
 
 # --- BERT & Milvus 설정 ---
 MODEL_NAME = "klue/bert-base"
+MILVUS_URI = st.secrets["MILVUS"]["MILVUS_URI"]
+MILVUS_TOKEN = st.secrets["MILVUS"]["MILVUS_TOKEN"]
 
 @st.cache_resource
 def load_resources(collection_alias):
