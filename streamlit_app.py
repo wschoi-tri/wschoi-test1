@@ -137,8 +137,6 @@ if site_cd != int(url_site) if url_site in ["1", "2"] else 1:
 
 # --- BERT & Milvus 설정 ---
 MODEL_NAME = "klue/bert-base"
-MILVUS_URI = "https://in03-4474f3640c68da6.serverless.aws-eu-central-1.cloud.zilliz.com"
-MILVUS_TOKEN = "f3c575b8841a690496169671586ecfa4af4c87b10281cc513ec00b6a30a9e0f7ae193749203701d5918254c17c46128d2d6d60d6"
 
 @st.cache_resource
 def load_resources(collection_alias):
