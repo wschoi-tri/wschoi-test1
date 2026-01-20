@@ -1,8 +1,6 @@
 import streamlit as st
 import requests
 import urllib3
-import torch
-from transformers import AutoTokenizer, AutoModel
 from pymilvus import connections, Collection
 
 http = urllib3.PoolManager()
