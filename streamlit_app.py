@@ -174,7 +174,7 @@ def get_product_detail_info(prd_no, site_cd):
 # API_URL = "https://cf-api.boribori.co.kr/recommend"
 API_URL = "https://cf-hapi.halfclub.com/recommend"
 self_yn = False
-k = 100
+k = 50
 select_prd_no = ""
 select_prd_nm = ""
 recomm_typ = ""
