@@ -174,7 +174,7 @@ def get_product_detail_info(prd_no, site_cd):
 # API_URL = "https://cf-api.boribori.co.kr/recommend"
 API_URL = "https://cf-hapi.halfclub.com/recommend"
 self_yn = False
-k = 50
+k = 100
 select_prd_no = ""
 select_prd_nm = ""
 recomm_typ = ""
@@ -199,6 +199,7 @@ ml_types = [
 
 if site_cd == 2:
     ml_types.append({"유사 상품 (BERT)": "bert_similar"})
+    ml_types.append({"유사 상품 (조합)": "multiSimilarItem"})
 
 def get_best_products(site_cd):
     try:
@@ -647,7 +648,7 @@ if service_type == "추천":
     type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)"]
     
     if site_cd == 2:
-        type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)","유사 상품 (BERT)"]
+        type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)","유사 상품 (BERT)","유사 상품 (조합)"]
     
 #     ml_types = [
 #     {"함께 본 상품 (view-together)": "viewtogether"},
