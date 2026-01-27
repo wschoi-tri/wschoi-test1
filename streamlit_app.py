@@ -1,11 +1,6 @@
 import streamlit as st
 import requests
-import urllib3
-# import torch
-# from transformers import AutoTokenizer, AutoModel
 from pymilvus import connections, Collection
-
-http = urllib3.PoolManager()
 
 # 페이지 설정
 st.set_page_config(
@@ -144,18 +139,10 @@ MILVUS_TOKEN = st.secrets["MILVUS"]["MILVUS_TOKEN"]
 @st.cache_resource
 def load_resources(collection_alias):
     """모델 로드 및 Milvus 연결 (캐싱)"""
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    # model = AutoModel.from_pretrained(MODEL_NAME)
-    # model.to(device)
-    # model.eval()
-    device = None
-    tokenizer = None
-    model = None
     connections.connect(uri=MILVUS_URI, token=MILVUS_TOKEN)
     collection = Collection(collection_alias)
     collection.load()
-    return tokenizer, model, collection, device
+    return None, None, collection, None
 
 def get_product_detail_info(prd_no, site_cd):
     """외부 API에서 상품 이미지 및 상세 정보를 가져옵니다."""
@@ -191,19 +178,16 @@ else:
     API_URL = "https://cf-api.boribori.co.kr/recommend"
 
 ml_types = [
-    {"함께 본 상품 (view-together)": "viewtogether"},
-    # {"함께 본 상품 (연령/성별)": "viewuser"},
-    {"함께 구매한 상품 (buy-together)": "buytogether"},
-    # {"함께 구매한 상품 (연령/성별)": "buyuser"},
-    {"유사 상품 (similar-item)": "similaritem"},
-    {"유사 이미지 상품 (similar-image)": "similar-image"},
-    {"개인화 추천 (recommend-for-you)": "recommendforyou"},
+    {"함께 본 상품 (viewTogether)": "viewtogether"},
+    {"함께 구매한 상품 (buyTogether)": "buytogether"},
+    {"유사 상품 (similarItem)": "similaritem"},
+    {"유사 이미지 상품 (similarImage)": "similar-image"},
+    {"개인화 추천 (recommendForYou)": "recommendforyou"},
     {"유사 상품 (BERT)": "bert_similar"},
     {"유사 상품 (조합)": "multiSimilarItem"},
-    {"meanSimilarItem":"meanSimilarItem"},
-    {"meanSimilarItemView":"meanSimilarItemView"},
-    {"meanSimilarItemBuy":"meanSimilarItemBuy"},
-    # {"검색 개인화 (keyword-search)": "keyword-search"},
+    {"평균 meanSimilarItem":"meanSimilarItem"},
+    {"평균 meanSimilarItemView":"meanSimilarItemView"},
+    {"평균 meanSimilarItemBuy":"meanSimilarItemBuy"},
 ]
 
 def get_best_products(site_cd):
@@ -213,8 +197,8 @@ def get_best_products(site_cd):
         else:
             url = "https://apix.boribori.co.kr/searches/best/?dealYn=N&interval=24&siteCd=2&limit=0,200&countryCd=001&langCd=001&deviceCd=001&mandM=b_boribori"
         
-        resp = http.request("GET", url)
-        if resp.status == 200:
+        resp = requests.get(url, timeout=5)
+        if resp.status_code == 200:
             data = resp.json()
             
             products = []
@@ -300,20 +284,6 @@ view_options = st.session_state[f"best_products_{site_cd}"] or [
     {"prd_nm": "가방", "prd_no": 393954850, "prd_img": "https://via.placeholder.com/200x250/87CEEB/000000?text=가방"},
     {"prd_nm": "스포츠", "prd_no": 391016367, "prd_img": "https://via.placeholder.com/200x250/98FB98/000000?text=스포츠"},
     {"prd_nm": "액세서리", "prd_no": 380115991, "prd_img": "https://via.placeholder.com/200x250/F4A460/000000?text=액세서리"}
-]
-search_options = [
-    {"prd_nm": "티셔츠", "prd_no": 0, "prd_img": ""},
-    {"prd_nm": "운동화", "prd_no": 1, "prd_img": ""},
-    {"prd_nm": "닥스", "prd_no": 2, "prd_img": ""},
-    {"prd_nm": "헤지스", "prd_no": 3, "prd_img": ""},
-    {"prd_nm": "자켓", "prd_no": 4, "prd_img": ""},
-    {"prd_nm": "골프화", "prd_no": 5, "prd_img": ""},
-    {"prd_nm": "팬츠", "prd_no": 6, "prd_img": ""},
-    {"prd_nm": "니트", "prd_no": 7, "prd_img": ""},
-    {"prd_nm": "지갑", "prd_no": 8, "prd_img": ""},
-    {"prd_nm": "CNN APPAREL", "prd_no": 9, "prd_img": ""},
-    {"prd_nm": "팬암", "prd_no": 10, "prd_img": ""},
-    {"prd_nm": "폴로랄프로렌", "prd_no": 11, "prd_img": ""}
 ]
 search_gender_options = {
     "남성": "male",
@@ -564,8 +534,12 @@ def show_target_list():
                 st.session_state.show_prd = target_prds
                 for resp_prd_no in target_prds:
                     search_url = f"http://hapix.halfclub.com/searches/prdList/?keyword={resp_prd_no}&siteCd={site_cd}&device=mc" if site_cd == 1 else f"http://apix.boribori.co.kr/searches/prdList/?keyword={resp_prd_no}&siteCd={site_cd}&device=mc"
-                    ori_img_resp = http.request("GET", search_url)
-                    if ori_img_resp.status == 200:
+                    try:
+                        ori_img_resp = requests.get(search_url, timeout=2)
+                    except Exception:
+                        continue
+
+                    if ori_img_resp.status_code == 200:
                         try:
                             j = ori_img_resp.json()
                             resp_data = j["data"]["result"]["hits"]["hits"][0]["_source"]
@@ -1060,6 +1034,8 @@ if submit_button:
             st.session_state.prd_no_list = set()
             for prd in prd_no.split(","):
                 st.session_state.prd_no_list.add(prd.strip())
+            # URL 파라미터 업데이트
+            st.query_params["prdNo"] = ",".join(st.session_state.prd_no_list)
             if st.session_state.show_prd != st.session_state.prd_no_list:
                 st.rerun()
     elif recommend_type != "similar-image":
@@ -1072,6 +1048,9 @@ if submit_button:
         else:
             st.session_state.prd_no = prd_no
             st.session_state.prd_no_list = {str(prd_no)}
+        
+        # URL 파라미터 업데이트
+        st.query_params["prdNo"] = str(st.session_state.prd_no)
     
     st.rerun()
 
