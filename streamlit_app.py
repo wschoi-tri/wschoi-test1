@@ -87,6 +87,7 @@ query_params = st.query_params
 url_site = query_params.get("siteCd", "1")
 url_type = query_params.get("mlType", "")
 url_prd = query_params.get("prdNo", "")
+url_k = query_params.get("k", "")
 
 # 기본 사이트 설정
 if "siteCd" not in query_params:
@@ -174,7 +175,10 @@ def get_product_detail_info(prd_no, site_cd):
 # API_URL = "https://cf-api.boribori.co.kr/recommend"
 API_URL = "https://cf-hapi.halfclub.com/recommend"
 self_yn = False
-k = 50
+if url_k and url_k.isdigit():
+    k = int(url_k)
+else:
+    k = 50
 select_prd_no = ""
 select_prd_nm = ""
 recomm_typ = ""
@@ -188,18 +192,19 @@ else:
 
 ml_types = [
     {"함께 본 상품 (view-together)": "viewtogether"},
-    {"함께 본 상품 (연령/성별)": "viewuser"},
+    # {"함께 본 상품 (연령/성별)": "viewuser"},
     {"함께 구매한 상품 (buy-together)": "buytogether"},
-    {"함께 구매한 상품 (연령/성별)": "buyuser"},
+    # {"함께 구매한 상품 (연령/성별)": "buyuser"},
     {"유사 상품 (similar-item)": "similaritem"},
     {"유사 이미지 상품 (similar-image)": "similar-image"},
     {"개인화 추천 (recommend-for-you)": "recommendforyou"},
+    {"유사 상품 (BERT)": "bert_similar"},
+    {"유사 상품 (조합)": "multiSimilarItem"},
+    {"meanSimilarItem":"meanSimilarItem"},
+    {"meanSimilarItemView":"meanSimilarItemView"},
+    {"meanSimilarItemBuy":"meanSimilarItemBuy"},
+    # {"검색 개인화 (keyword-search)": "keyword-search"},
 ]
-# {"검색 개인화 (keyword-search)": "keyword-search"}
-
-if site_cd == 2:
-    ml_types.append({"유사 상품 (BERT)": "bert_similar"})
-    ml_types.append({"유사 상품 (조합)": "multiSimilarItem"})
 
 def get_best_products(site_cd):
     try:
@@ -349,14 +354,6 @@ if "prd_no_list" not in st.session_state:
     
 if "prd_no" not in st.session_state:
     st.session_state.prd_no = ""
-else:
-    select_prd_no = st.session_state.prd_no
-    if select_prd_no:
-        if len(select_prd_no.split(",")) > 1:
-            for prd in select_prd_no.split(","):
-                st.session_state.prd_no_list.add(str(prd))
-        else:
-            st.session_state.prd_no_list.add(str(select_prd_no))
             
     
 if "prd_nm" not in st.session_state:
@@ -490,6 +487,7 @@ if service_type == "검색":
     
 # 이미지 버튼 표시
 cols = st.columns(col_count)
+button_clicked = False
 for i, value in enumerate(recommend_sample):
     prd_nm = value.get("prd_nm", "")
     prd_img = value.get("prd_img", "")
@@ -506,10 +504,11 @@ for i, value in enumerate(recommend_sample):
                 key=f"btn_{prd_no}",
                 use_container_width=True
             ):
+                button_clicked = True
                 # 선택 표시
                 selected_class = "selected-btn"
                 
-                if st.session_state.type in ["recommendforyou"]:
+                if st.session_state.type in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
                     if str(prd_no) not in st.session_state.prd_no_list:
                         st.session_state.prd_no_list.add(str(prd_no))
                     else:
@@ -552,16 +551,18 @@ st.markdown("---")
 def show_target_list():
     if service_type != "검색":
         st.session_state.show_type = st.session_state.type
-        if select_prd_no or st.session_state.prd_no_list:
+        
+        target_prds = []
+        if st.session_state.type in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
+            target_prds = list(st.session_state.prd_no_list)
+        elif st.session_state.prd_no:
+            target_prds = [st.session_state.prd_no]
+            
+        if target_prds:
             with st.container():
-                prd_no_list = []
-                if st.session_state.prd_no_list:
-                    prd_no_list = list(st.session_state.prd_no_list)
-                else:
-                    prd_no_list = [select_prd_no]
                 ori_prd_list = []
-                st.session_state.show_prd = prd_no_list
-                for resp_prd_no in prd_no_list:
+                st.session_state.show_prd = target_prds
+                for resp_prd_no in target_prds:
                     search_url = f"http://hapix.halfclub.com/searches/prdList/?keyword={resp_prd_no}&siteCd={site_cd}&device=mc" if site_cd == 1 else f"http://apix.boribori.co.kr/searches/prdList/?keyword={resp_prd_no}&siteCd={site_cd}&device=mc"
                     ori_img_resp = http.request("GET", search_url)
                     if ori_img_resp.status == 200:
@@ -576,7 +577,7 @@ def show_target_list():
                             prdUrl = f"https://www.halfclub.com/product/{prdNo}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prdNo}"
                             
                             text = ""
-                            if len(prd_no_list) > 1:
+                            if len(target_prds) > 1:
                                 text = text + "<p style='font-size:10pt;margin:0;padding:0;'>"
 
                             dp_ctgr_nm1 = resp_data.get("dpCtgrNm1", "")
@@ -594,7 +595,7 @@ def show_target_list():
                             product_link_url = f"https://www.halfclub.com/product/{prdNo}" if site_cd == 1 else f"https://m.boribori.co.kr/product/{prdNo}"
                             text = text + f"상 품 : <a href='{product_link_url}'>{prdNo}</a><br/>"
                             text = text + f"가 격 : {dcPrc:,}<br/>"
-                            if len(prd_no_list) > 1:
+                            if len(target_prds) > 1:
                                 text = text + f"상품명 :<br/>{prdNm}<br/>"
                             else:
                                 text = text + f"상품명 : {prdNm}<br/>"
@@ -607,7 +608,7 @@ def show_target_list():
                                     text = text + f" ■ 선택 나이 : {age}<br/>"
                                 if gender:
                                     text = text + f" ■ 선택 성별 : {gender}<br/>"
-                            if len(prd_no_list) > 1:
+                            if len(target_prds) > 1:
                                 text = text + f"</p><br/>"
                             
                             ori_prd_list.append({
@@ -644,11 +645,13 @@ if service_type == "추천":
     #     list(ml_types[7].keys())[0]
     # ]
     
+    type_options = [list(item.keys())[0] for item in ml_types]
     
-    type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)"]
     
-    if site_cd == 2:
-        type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)","유사 상품 (BERT)","유사 상품 (조합)"]
+    # type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)"]
+    
+    # if site_cd == 2:
+    #     type_options = ["함께 본 상품 (view-together)","함께 구매한 상품 (buy-together)","유사 상품 (similar-item)","유사 이미지 상품 (similar-image)","개인화 추천 (recommend-for-you)","유사 상품 (BERT)","유사 상품 (조합)"]
     
 #     ml_types = [
 #     {"함께 본 상품 (view-together)": "viewtogether"},
@@ -682,9 +685,9 @@ if service_type == "추천":
             break
     
     # URL 파라미터로 상품 설정
-    if url_prd:
+    if url_prd and not button_clicked:
         # prdNo 파라미터 처리
-        if recommend_type == "recommendforyou":
+        if recommend_type in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
             # 기존 리스트 초기화 후 URL 파라미터로 설정
             st.session_state.prd_no_list = set()
             if "," in url_prd:
@@ -712,7 +715,7 @@ if input_yn:
         if recommend_type in ["keyword-search"]:
             input_text = "검색어"
             input_value = st.session_state.prd_nm if st.session_state.prd_nm != "직접입력" else ""
-        elif recommend_type in ["recommendforyou"]:
+        elif recommend_type in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
             input_text = "상품번호 리스트 (ex. 상품번호1,상품번호2,상품번호3)"
             input_value = ",".join(st.session_state.prd_no_list) if st.session_state.prd_no_list else ""
         else:
@@ -727,7 +730,7 @@ if recommend_type in ["keyword-search"]:
     if gender:
         st.session_state.gender = gender.replace("👨 ", "").replace("👩 ", "")
 
-if st.session_state.type not in ["recommendforyou"]:
+if st.session_state.type not in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
     st.session_state.prd_no_list = set()
     
 # 가로선
@@ -740,11 +743,11 @@ def submit():
     if not select_type:
         return
     # 상품 번호 입력 (개인화 추천은 리스트로 확인)
-    if recommend_type == "recommendforyou":
+    if recommend_type in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
         if not st.session_state.prd_no_list:
             return
     else:
-        if not select_prd_no and not select_prd_nm:
+        if not st.session_state.prd_no and not st.session_state.prd_nm:
             return
     
     try:
@@ -771,7 +774,7 @@ def submit():
                 elif recommend_type in ["buytogether"]:
                     recommend_type = "buyuser"
                 params = dict(
-                    prdNo=int(select_prd_no),
+                    prdNo=int(st.session_state.prd_no),
                     age=selected_age,
                     gender=selected_gender,
                     siteCd=site_cd,
@@ -780,7 +783,7 @@ def submit():
                 )
             else:
                 params = dict(
-                    prdNo=int(select_prd_no),
+                    prdNo=int(st.session_state.prd_no),
                     siteCd=site_cd,
                     size=int(k),
                     # score=True
@@ -796,13 +799,13 @@ def submit():
                         selected_gender = search_gender_options[item]
                         break
             params = dict(
-                keyword=select_prd_nm,
+                keyword=st.session_state.prd_nm,
                 gender=selected_gender,
                 siteCd=site_cd,
                 limit=int(k),
                 # score=True
             )
-        elif recommend_type in ["recommendforyou"]:
+        elif recommend_type in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
             params = dict(
                 prdNo=[int(prd) for prd in st.session_state.prd_no_list],
                 siteCd=site_cd,
@@ -818,7 +821,7 @@ def submit():
             # similar-image는 단일 상품만, 나머지는 여러 상품 처리
             if recommend_type == "similar-image":
                 params = dict(
-                    prdNo=int(select_prd_no),
+                    prdNo=int(st.session_state.prd_no),
                     siteCd=site_cd,
                     size=size_param
                 )
@@ -827,7 +830,7 @@ def submit():
                 if st.session_state.prd_no_list and len(st.session_state.prd_no_list) > 1:
                     prd_list = [int(prd) for prd in st.session_state.prd_no_list]
                 else:
-                    prd_list = [int(select_prd_no)]
+                    prd_list = [int(st.session_state.prd_no)]
                 
                 params = dict(
                     prdNo=prd_list,
@@ -844,7 +847,7 @@ def submit():
                 tokenizer, model, collection, device = load_resources(alias)
                 
                 # 2. 상품 번호로 벡터 조회
-                target_prd_no = int(select_prd_no)
+                target_prd_no = int(st.session_state.prd_no)
                 res = collection.query(
                     expr=f"prd_no == {target_prd_no}",
                     output_fields=["vector"],
@@ -896,9 +899,9 @@ def submit():
         # 추천 대상 상품 표시
         if recommend_type in ["keyword-search"]:
             if gender:
-                st.subheader(f"검색 키워드: {select_prd_nm} ({gender})")
+                st.subheader(f"검색 키워드: {st.session_state.prd_nm} ({gender})")
             else:
-                st.subheader(f"검색 키워드: {select_prd_nm}")
+                st.subheader(f"검색 키워드: {st.session_state.prd_nm}")
             st.markdown("---")
 
                 
@@ -1052,7 +1055,7 @@ if submit_button:
     if recommend_type in ["buytogether","viewtogether"]:
         if age:
             st.session_state.age = age
-    if recommend_type in ["recommendforyou"]:
+    if recommend_type in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
         if prd_no:
             st.session_state.prd_no_list = set()
             for prd in prd_no.split(","):
@@ -1068,6 +1071,7 @@ if submit_button:
             st.session_state.prd_no = prd_no.split(",")[0].strip()  # 첫 번째 상품을 대표로
         else:
             st.session_state.prd_no = prd_no
+            st.session_state.prd_no_list = {str(prd_no)}
     
     st.rerun()
 
@@ -1087,12 +1091,12 @@ if auto_submit:
             st.session_state.gender = gender
     
     # recommendforyou가 아닌 경우에만 prd_no_list 초기화
-    if recommend_type not in ["recommendforyou"]:
+    if recommend_type not in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
         if st.session_state.prd_no_list:
             st.session_state.prd_no_list = set()
         
     if st.session_state.show_type != recommend_type:
-        if st.session_state.show_type in ["recommendforyou"] and recommend_type != "recommendforyou":
+        if st.session_state.show_type in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"] and recommend_type not in ["recommendforyou", "meanSimilarItem", "meanSimilarItemView", "meanSimilarItemBuy"]:
             st.session_state.prd_no_list = set()
         st.rerun()
 
